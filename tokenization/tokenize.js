@@ -1,9 +1,10 @@
 import { isValidName } from "../helpers/token-checks.js";
 import { keywords } from "../environment/environment.js";
+import fs from 'fs'
 
 
-let code = "global const number = 2304";
-
+const code  = fs.readFileSync("./code", {encoding:"utf8"})
+console.log(code)
 
 function tokenize (code ){
     let i = 0;
@@ -14,11 +15,13 @@ function tokenize (code ){
 
 
     while (i<code.length){
+        if (code[i] === "\r" || code[i] === "\n"){
+            i++
+        }
         if (/^[a-zA-Z0-9_$@#]$/.test(code[i])){
             char = char + code[i]
             i++
         }
-        console.log(char)
         if (code[i] === " "){
             while (code[i] === " "){
                 i++
@@ -30,7 +33,6 @@ function tokenize (code ){
                 })
                 char  = ""
             }else if((code[i] !== "=") && char !== "" && (!keywords.includes(char))){
-                console.log(char,"char")
                 tokens.push({
                     type:'identifier',
                     value:char
@@ -39,7 +41,48 @@ function tokenize (code ){
 
             }
         }
+        if (code[i] === "<"){
+            if (tokens[tokens.length-1].value !== ")"){
+                    tokens.push({
+                        type:"less_than",
+                        value:"<"
+                    })
+            }else{
+                tokens.push({
+                    type:"openeing_blockscope",
+                    value:"<"
+                })
+            }
+        i++
+        }
+        if (code[i] === ">"){
+                tokens.push({
+                    type:"closing_parenthesis",
+                    value:">"
+                })
+            i++
+        }
+        if (code[i] === "("){
+            tokens.push({
+                type:"openeing_parenthesis",
+                value:"("
+            })
+            i++
+        }
+        if (code[i] === ")"){
+            tokens.push({
+                type:"closing_parenthesis",
+                value:")"
+            })
+            i++
+        }
         if (code[i] === "="){
+            let temp =""
+            while (code[i] === "="){
+                temp = temp + code[i]
+                i++
+            }
+            if (temp.length === 1){
                 tokens.push({
                     type:'identifier',
                     value:char
@@ -48,9 +91,29 @@ function tokenize (code ){
                     type:'equality',
                     value: "="
                 })
+            }
+            if (temp.length === 2){
+                tokens.push({
+                    type:'identifier',
+                    value:char
+                })
+                tokens.push({
+                    type:'double_equality',
+                    value: "=="
+                })
+            }
+            if (temp.length === 3){
+                tokens.push({
+                    type:'identifier',
+                    value:char
+                })
+                tokens.push({
+                    type:'triple_equality',
+                    value:"==="
+                })
+            }
             char = ""
-            i++
-
+            temp=""
         }
         if (code[i] === "'"){
             i++;
@@ -63,14 +126,14 @@ function tokenize (code ){
                 type:"string",
                 value:char
             })
-
+        char =""
         }
         
-        if (!isNaN(Number(code[i])) && char === ""){
+        if (!isNaN(parseInt(code[i])) && char === ""){
+
             let decimalCount = 0;
             let num = ""
-            while ((!isNaN(Number(code[i])) || code[i] === ".")){
-                console.log(code[i])
+            while ((!isNaN(parseInt(code[i])) || code[i] === ".")){
                 if (code[i] === "."){
                     decimalCount++
                 }
@@ -82,9 +145,8 @@ function tokenize (code ){
             }
             tokens.push({
                 type:'Number',
-                value:Number(num)
+                value:parseInt(num)
             })
-            i++
         }
     }
     return tokens;
@@ -102,7 +164,7 @@ let i = 0;
 let tokens = []
 let char = ""
 let isQuotationOpened = false;
-
+/*
 while (i < tokens.length){
     if (code[i] !== "=" && code[i] !== "'" && code[i] !== " " ){
         char = char + code[i]; 
@@ -156,6 +218,6 @@ while (i < tokens.length){
     }
     i++;
 }
-
+*/
 
 //console.log(tokens)
