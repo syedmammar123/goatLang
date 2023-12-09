@@ -2,7 +2,7 @@ import { isValidName } from "../helpers/token-checks.js";
 import { keywords } from "../environment/environment.js";
 import fs from 'fs'
 
-
+console.log(keywords)
 const code  = fs.readFileSync("./code", {encoding:"utf8"})
 console.log(code)
 
@@ -13,33 +13,30 @@ function tokenize (code ){
     let isQuotationOpened=false;
 
 
-
     while (i<code.length){
         if (code[i] === "\r" || code[i] === "\n"){
             i++
         }
-        if (/^[a-zA-Z0-9_$@#]$/.test(code[i])){
+        while (/^[a-zA-Z0-9_$@#]$/.test(code[i])){
             char = char + code[i]
             i++
         }
-        if (code[i] === " "){
             while (code[i] === " "){
                 i++
             }
-            if (keywords.includes(char)){
-                tokens.push({
-                    type:'keyword',
-                    value:char
-                })
-                char  = ""
-            }else if((code[i] !== "=") && char !== "" && (!keywords.includes(char))){
-                tokens.push({
-                    type:'identifier',
-                    value:char
-                })
-                char  = ""
+        if (keywords.includes(char)){
+            tokens.push({
+                type:'keyword',
+                value:char
+            })
+            char  = ""
+        }else if((code[i] !== "=") && char !== "" && (!keywords.includes(char))){
+            tokens.push({
+                type:'identifier',
+                value:char
+            })
+            char  = ""
 
-            }
         }
         if (code[i] === "<"){
             if (tokens[tokens.length-1].value !== ")"){
