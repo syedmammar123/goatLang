@@ -2,17 +2,14 @@ import { isValidName } from "../helpers/token-checks.js";
 import { keywords } from "../environment/environment.js";
 import fs from 'fs'
 
-console.log(keywords)
 const code  = fs.readFileSync("./code", {encoding:"utf8"})
-console.log(code)
 
 function tokenize (code ){
     let i = 0;
     let tokens = []
     let char=""
-    let isQuotationOpened=false;
 
-
+ 
     while (i<code.length){
         if (code[i] === "\r" || code[i] === "\n"){
             i++
@@ -39,25 +36,32 @@ function tokenize (code ){
 
         }
         if (code[i] === "<"){
-            if (tokens[tokens.length-1].value !== ")"){
-                    tokens.push({
-                        type:"less_than",
-                        value:"<"
-                    })
-            }else{
                 tokens.push({
-                    type:"openeing_blockscope",
+                    type:"less_than",
                     value:"<"
                 })
-            }
         i++
         }
         if (code[i] === ">"){
                 tokens.push({
-                    type:"closing_parenthesis",
-                    value:">"
+                    type:"greater_than",
+                    value:"<"
                 })
-            i++
+        i++
+        }
+        if (code[i] === "{"){
+                tokens.push({
+                    type:"openening_blockscope",
+                    value:"{"
+                })
+        i++
+        }
+        if (code[i] === "}"){
+                tokens.push({
+                    type:"closing_blockscope",
+                    value:"}"
+                })
+        i++
         }
         if (code[i] === "("){
             tokens.push({
