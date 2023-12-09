@@ -3,7 +3,7 @@ import { keywords } from "../environment/environment.js";
 import fs from 'fs'
 
 console.log(keywords)
-const code  = fs.readFileSync("./code", {encoding:"utf8"})
+const code  = fs.readFileSync("./code.txt", {encoding:"utf8"})
 console.log(code)
 
 function tokenize (code ){

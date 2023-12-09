@@ -70,7 +70,7 @@ function startsWithKeyword(str, index, keyword, caseSensitive = false) {
     return caseSensitive ? substring === keyword : substring.toLowerCase() === keyword.toLowerCase();
 }
 
-const code = 'IF(x===3)<>prinT("x is 3")<> else<>print("x is 2")<>';
+const code = 'IF(x===3)<>print("x is 3")<> else<>print("x is 2")<>';
 const tokens = tokenize(code);
 
 // Print the resulting tokens
