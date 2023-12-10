@@ -1,161 +1,100 @@
-import { isValidName } from "../helpers/token-checks.js";
-import { keywords } from "../environment/environment.js";
+// Sample code
+const code = 'for i from 1 to 10 by 2 < display( i ) ; >';
 
+// Keywords defined in environment.js
+const keywords = ['for', 'from', 'to', 'by', 'display'];
 
-let code = "global const number = 2304";
+// Tokenize function
+function tokenize(code) {
+  const tokens = [];
+  let current = 0;
 
+  while (current < code.length) {
+    let char = code[current];
 
-function tokenize (code ){
-    let i = 0;
-    let tokens = []
-    let char=""
-    let isQuotationOpened=false;
-
-
-
-    while (i<code.length){
-        if (/^[a-zA-Z0-9_$@#]$/.test(code[i])){
-            char = char + code[i]
-            i++
-        }
-        console.log(char)
-        if (code[i] === " "){
-            while (code[i] === " "){
-                i++
-            }
-            if (keywords.includes(char)){
-                tokens.push({
-                    type:'keyword',
-                    value:char
-                })
-                char  = ""
-            }else if((code[i] !== "=") && char !== "" && (!keywords.includes(char))){
-                console.log(char,"char")
-                tokens.push({
-                    type:'identifier',
-                    value:char
-                })
-                char  = ""
-
-            }
-        }
-        if (code[i] === "="){
-                tokens.push({
-                    type:'identifier',
-                    value:char
-                })
-                tokens.push({
-                    type:'equality',
-                    value: "="
-                })
-            char = ""
-            i++
-
-        }
-        if (code[i] === "'"){
-            i++;
-            while (code[i] !== "'" ){
-                char = char + code[i];
-                i++
-            }
-            i++;
-            tokens.push({
-                type:"string",
-                value:char
-            })
-
-        }
-        
-        if (!isNaN(Number(code[i])) && char === ""){
-            let decimalCount = 0;
-            let num = ""
-            while ((!isNaN(Number(code[i])) || code[i] === ".")){
-                console.log(code[i])
-                if (code[i] === "."){
-                    decimalCount++
-                }
-                if (decimalCount > 1){
-                    throw new Error("Invalid number")
-                }
-                num = num + code[i]
-                i++
-            }
-            tokens.push({
-                type:'Number',
-                value:Number(num)
-            })
-            i++
-        }
+    // Skip whitespaces
+    if (/\s/.test(char)) {
+      current++;
+      continue;
     }
-    return tokens;
+
+    // Check for numeric literals
+    if (/[0-9]/.test(char)) {
+      let value = '';
+      while (/[0-9]/.test(char)) {
+        value += char;
+        char = code[++current];
+      }
+      tokens.push({ type: 'NUMBER', value:parseInt(value) });
+      continue;
+    }
+
+    // Check for identifiers and keywords
+    if (/[a-zA-Z]/.test(char)) {
+      let value = '';
+      while (/[a-zA-Z]/.test(char) || /\d/.test(char)) {
+        value += char;
+        char = code[++current];
+      }
+      if(value.length == 3 && value[0]=='f' )
+
+      if (keywords.includes(value)) {
+        tokens.push({ type: 'KEYWORD', value });
+       
+      } else {
+        tokens.push({ type: 'IDENTIFIER', value });
+      }
+
+      continue;
+    }
+
+    // Check for symbols
+    if (/[\;<\>\(\)]/.test(char)) {
+        if(char=='<' || char=='>'){
+            tokens.push({type:'DELIMITER' , value:char});
+            current++;
+            continue;
+        }
+        else if (char == '('){
+            tokens.push({type:'OPENPAREN' , value:char});
+            current++;
+            continue;
+
+        }
+        else if (char == ')'){
+            tokens.push({type:'CLOSEPAREN' , value:char});
+            current++;
+            continue;
+
+        }
+        else if (char == ';'){
+          tokens.push({type:'SEMICOLN' , value:char});
+          current++;
+          continue;
+
+      }
+
+      tokens.push({ type: char, value: char });
+      current++;
+      continue;
+    }
+
+    // Error if an unexpected character is encountered
+    throw new Error(`Unexpected character: ${char}`);
+  }
+
+  return tokens;
 }
 
-console.log(tokenize(code))
-
-
-
-
-
-
-
-let i = 0;
-let tokens = []
-let char = ""
-let isQuotationOpened = false;
-
-while (i < tokens.length){
-    if (code[i] !== "=" && code[i] !== "'" && code[i] !== " " ){
-        char = char + code[i]; 
-    }
-    else if (code[i] === " "){
-        if (isQuotationOpened){
-            char = char + code[i]
-        }
-        if (keywords.includes(char) && !isQuotationOpened){
-            tokens.push({
-                type:"declarative_keyword",
-                value:char
-            })
-            char = ""
-        }
-    }
-    else{
-        if (code[i] === "=" ){
-            if (!isValidName(char)){
-                throw new Error("Not a valid Idenrifer Name! ")
-            }
-            tokens.push({
-                type:"identifier",
-                value:char
-            })
-            tokens.push({
-                type:"assignment_operator",
-                value:"="
-            })
-            char = ""
-        }else if (code[i] === "'"){
-            if (isQuotationOpened){
-                tokens.push({
-                    type:"string",
-                    value:char
-                })
-                tokens.push({
-                    type:"closing_quotation",
-                    value:"'"
-                })
-                char = ""
-            }
-            else{
-                tokens.push({
-                    type:"opening_quotation",
-                    value:"'"
-                })
-            }
-            isQuotationOpened = !isQuotationOpened;
-        }
-    }
-    i++;
+function startsWithKeyword(str, index, keyword, caseSensitive = false) {
+    const substring = str.slice(index, index + keyword.length);
+    return caseSensitive ? substring === keyword : substring.toLowerCase() === keyword.toLowerCase();
 }
 
-
-//console.log(tokens)
+// Test the lexer
+try {
+  const tokens = tokenize(code);
+  console.log(tokens);
+} catch (error) {
+  console.error(error.message);
+}
