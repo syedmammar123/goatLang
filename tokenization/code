@@ -1,11 +1,1 @@
-global const number=2304
-if (a == 3){
-    const str = 'helloworld'
-    display('hahaha hehehe')
- }
-
- fun printName(){
-    display(3>4)
- }
-
- 
+global const array = [ 234, 'hello' , 23948, 'rajja cutie']
