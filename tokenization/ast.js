@@ -69,6 +69,16 @@ class BinaryExpression {
     }
 }
 
+class BlockStatement{
+    constructor(){
+        this.type="BlockStatement";
+        this.body = [];
+    }
+    push(smth){
+        this.body.push(smth)
+    }
+}
+
 class ForLoopStepBinaryExpression {
     static stepParse(l , r , o){
         let left;
@@ -101,6 +111,12 @@ class BinaryExpressionParser {
         }
         else if (tokens[i].type === 'NUMBER' && forloopStep != '')
         {
+            if(tokens[i].value<0){
+               tokens[i].value = Math.abs(tokens[i].value);
+                
+            }
+           
+            
             right = ForLoopStepBinaryExpression.stepParse(forloopId, tokens[i].value, forloopStep);
         }
 
@@ -142,11 +158,11 @@ class BinaryExpressionParser {
     }
 }
 
-class ForLoop {
+class ForStatement {
     constructor() {
-        this.type = 'ForLoop';
+        this.type = 'ForStatement';
         this.init = null;
-        this.condition = null;
+        this.test = null;
         this.update = null;
         this.body = null;
     }
@@ -155,8 +171,8 @@ class ForLoop {
         this.init = init;
     }
 
-    setCondition(condition) {
-        this.condition = condition;
+    setTest(test) {
+        this.test = test;
     }
 
     setUpdate(update) {
@@ -172,11 +188,11 @@ let tokens = [
     { type: 'KEYWORD', value: 'for' },    
     { type: 'IDENTIFIER', value: 'i' },   
     { type: 'KEYWORD', value: 'from' },   
-    { type: 'NUMBER', value: 1 },
+    { type: 'NUMBER', value: 10 },
     { type: 'KEYWORD', value: 'to' },     
-    { type: 'NUMBER', value: 10 },        
+    { type: 'NUMBER', value: 1 },        
     { type: 'KEYWORD', value: 'by' },     
-    { type: 'NUMBER', value: 2 },
+    { type: 'NUMBER', value: -2 },
     { type: 'DELIMITER', value: '<' },    
     { type: 'KEYWORD', value: 'display' },
     { type: 'OPENPAREN', value: '(' },
@@ -193,7 +209,7 @@ let tokens = [
 
     while (i < tokens.length) {
         if (tokens[i].value === 'for') {
-            let forLoop = new ForLoop();
+            let forStatement = new ForStatement();
             i++;
 
             // Parse initialization with binary expression support
@@ -218,8 +234,8 @@ let tokens = [
                 }
                 declarator.setInit(val);
                 init.pushDeclarators(declarator);
-                forLoop.setInit(init);
-                console.log(forLoop.init , "forloop init...");
+                forStatement.setInit(init);
+                console.log(forStatement.init , "forloop init...");
                 console.log("\n\n\n");
 
             } else {
@@ -240,11 +256,11 @@ let tokens = [
             // Parse condition with binary expression support
             i++;
          
-           let cond = checkCond(forLoop.init.declarations[0].init , tokens[i].value);
+           let cond = checkCond(forStatement.init.declarations[0].init , tokens[i].value);
            let _oper = cond?'<':'>';
-            let conditionValue = BinaryExpressionParser.parse(tokens, i , _oper , forLoop.init.declarations[0].id ,'');
-            forLoop.setCondition(conditionValue);
-            console.log(forLoop.condition , "forloop condition...");
+            let conditionValue = BinaryExpressionParser.parse(tokens, i , _oper , forStatement.init.declarations[0].id ,'');
+            forStatement.setTest(conditionValue);
+            console.log(forStatement.test , "forloop condition...");
             console.log("\n\n\n");
 
             i++;
@@ -254,31 +270,31 @@ let tokens = [
 
             // Parse update with binary expression support
             i++;
-    
-            let step= checkStep(tokens[i].value);
-            let updateValue = BinaryExpressionParser.parse(tokens, i , '=' , forLoop.init.declarations[0].id , step );
-            forLoop.setUpdate(updateValue);
-            console.log(forLoop.update , "forloop update...");
+
+            let step= checkStep(tokens[i].value ,forStatement.init.declarations[0].init , tokens[i-2].value );
+            let updateValue = BinaryExpressionParser.parse(tokens, i , '=' , forStatement.init.declarations[0].id , step );
+            forStatement.setUpdate(updateValue);
+            console.log(forStatement.update , "forloop update...");
             console.log("\n\n\n");
           
 
             i++;
             if (tokens[i].type === 'DELIMITER' && tokens[i].value === '<') {
                 i++;
-                let body = new Program();
-                while (!(tokens[i].type === 'DELIMITER' && tokens[i].value === '>')) {
-                    let statement = generateStatement(tokens, i);
-                    body.push(statement);
-                    i++;  // Move to the next token
-                }
-                forLoop.setBody(body);
-                console.log(forLoop.body , "forloop body...");
-                console.log("\n\n\n");
+                let body = new BlockStatement();
+                // while (!(tokens[i].type === 'DELIMITER' && tokens[i].value === '>')) {
+                //     let statement = generateStatement(tokens, i);
+                //     body.push(statement);
+                //     i++;  // Move to the next token
+                // }
+                 forStatement.setBody(body);
+                 console.log(forStatement.body , "forloop body...");
+                 console.log("\n\n\n");
             } else {
                 throw new Error('Expected "<" to start the loop body.');
             }
 
-            ast.push(forLoop);
+            ast.push(forStatement);
         }
 
         i++;
@@ -291,13 +307,25 @@ function checkCond(startval , endval)
 {
     return (startval<endval);
 }
-function checkStep(_step){
-    if(_step>0)
+function checkStep(_step , start , end){
+    if(_step>0 )
     {
+        if(start<end){
         return '+';
+        }
+        else{
+            throw new Error("Starting value must be less than End value");
+        }
     }
-    else{
-        return '-';
+    else if (_step<0){
+        if(start>end){
+            return '-';
+        }
+        else{
+            throw new Error("Starting value must be greater than End value");
+            
+        }
+        
     }
 }
 
