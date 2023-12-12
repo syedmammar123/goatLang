@@ -1,0 +1,3 @@
+fun print(name,date){
+     a = 'Hello world'
+}
