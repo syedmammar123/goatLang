@@ -46,9 +46,10 @@ export const generateAst = (tokens) => {
       tokens[i].value === "const" ||
       tokens[i].type === "identifier"
     ) {
+      let targetScope = scope[scope.length - 1];
       let var1 = new VariableDeclaration();
       if (tokens[i].value === "global") {
-        scope = ast;
+        targetScope = scope[0];
         i++;
       }
       if (tokens[i].value === "const") {
@@ -60,7 +61,11 @@ export const generateAst = (tokens) => {
       const [declarator, j] = parseVariables(tokens, i);
       i = j;
       var1.pushDeclarators(declarator);
-      scope[scope.length - 1].push(var1);
+      if (targetScope instanceof Program) {
+        targetScope.insert(var1, targetScope.body.length - 1);
+      } else {
+        targetScope.push(var1);
+      }
     }
     if (tokens[i].type === "keyword" && tokens[i].value === "fun") {
       const fun = new FunctionDeclaration();

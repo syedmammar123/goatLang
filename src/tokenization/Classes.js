@@ -1,3 +1,13 @@
+function insertIntoArray(arr, idx, val) {
+  if (idx > arr.length) {
+    return;
+  }
+  for (let i = arr.length; i >= idx; i--) {
+    arr[i] = arr[i - 1];
+  }
+  arr[idx] = val;
+}
+
 export class Program {
   constructor() {
     this.type = "Program";
@@ -5,6 +15,12 @@ export class Program {
   }
   push(smth) {
     this.body.push(smth);
+  }
+  unshift(smth) {
+    this.body.unshift(smth);
+  }
+  insert(smth, idx) {
+    insertIntoArray(this.body, idx, smth);
   }
 }
 

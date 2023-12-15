@@ -1,3 +1,8 @@
 fun print(name,date){
      a = 'Hello world'
+     fun hello(dob){
+        global const b = 329
+        global const v = 329
+        c = 999
+     }
 }
