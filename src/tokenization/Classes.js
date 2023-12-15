@@ -98,3 +98,13 @@ export class BlockStatement {
     this.body.push(statement);
   }
 }
+
+export class ArrayExpression{
+    constructor (){
+        this.type = "ArrayExpression"
+        this.elements = []
+    }
+    push(smth){
+        this.elements.push(smth)
+    }
+}
