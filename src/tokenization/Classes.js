@@ -99,12 +99,12 @@ export class BlockStatement {
   }
 }
 
-export class ArrayExpression{
-    constructor (){
-        this.type = "ArrayExpression"
-        this.elements = []
-    }
-    push(smth){
-        this.elements.push(smth)
-    }
+export class ArrayExpression {
+  constructor() {
+    this.type = "ArrayExpression";
+    this.elements = [];
+  }
+  push(smth) {
+    this.elements.push(smth);
+  }
 }
