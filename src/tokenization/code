@@ -1,17 +1,2 @@
-arr = [234,'hello',6969,[3,[4,5,['pp']]], fun printName()
-{
-        b = 0
-}
-]
-
-
-fun print(name,date){
-     a = 'Hello world'
-     fun hello(dob){
-        global const b = 329
-        global const v = 329
-        c = 999
-     }
-}
-
-
+a = 212 + 2
+b = 300 + a

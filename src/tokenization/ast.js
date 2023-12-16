@@ -25,7 +25,7 @@ function parseVariables(tokens, i, scope) {
   }
   i++;
   let init;
-  if (tokens[i].value === "[") {
+  if (tokens[i].value === "[") { 
     init = new ArrayExpression();
     scope.push(init);
   } else if (tokens[i]?.type === "string") {
@@ -53,7 +53,7 @@ function parseFunction(tokens, i, destScope, scope) {
     if (tokens[i].type === "identifier") {
       fun.pushParams(new Identifier(tokens[i].value));
     }
-    if (paramCount > 1000000) {
+    if (paramCount > 1000000) { 
       throw new Error(") missing!");
     }
     i++;
@@ -95,22 +95,22 @@ export const generateAst = (tokens) => {
   let ast = new Program();
   let scope = [ast];
   while (i < tokens.length) {
-    if (tokens[i].value === "[") {
+    if (tokens[i].value === "[") { // agr nested array ho to ...
       let arr = new ArrayExpression();
-      scope[scope.length - 1].push(arr);
-      scope.push(arr);
+      scope[scope.length - 1].push(arr);  // array ko current scope me add kia
+      scope.push(arr);  // array ko current scope bnaya so that next sare elements ushi array me add hon
       i++;
     }
     if (
       tokens[i].value === "," &&
       tokens[i].type === "comma" &&
-      scope[scope.length - 1] instanceof ArrayExpression
+      scope[scope.length - 1] instanceof ArrayExpression // comma ( seperator ) ko array me ignore krengy 
     ) {
       i++;
     }
     if (
       tokens[i].type === "Number" &&
-      scope[scope.length - 1] instanceof ArrayExpression
+      scope[scope.length - 1] instanceof ArrayExpression // numbers ko current scope k array me add krengy
     ) {
       let temp = new NumericLiteral(tokens[i].value);
       scope[scope.length - 1].push(temp);
@@ -118,7 +118,7 @@ export const generateAst = (tokens) => {
     }
     if (
       tokens[i].type === "string" &&
-      scope[scope.length - 1] instanceof ArrayExpression
+      scope[scope.length - 1] instanceof ArrayExpression // same for strings
     ) {
       let temp = new StringLiteral(tokens[i].value);
       scope[scope.length - 1].push(temp);
@@ -128,12 +128,12 @@ export const generateAst = (tokens) => {
       tokens[i].value === "global" ||
       tokens[i].value === "const" ||
       (tokens[i].type === "identifier" &&
-        !(scope[scope.length - 1] instanceof ArrayExpression))
+        !(scope[scope.length - 1] instanceof ArrayExpression)) // checking that current scope array to ni bcs array me initialization nai hoskti
     ) {
       let targetScope = scope[scope.length - 1];
       let var1 = new VariableDeclaration();
       if (tokens[i].value === "global") {
-        targetScope = scope[0];
+        targetScope = scope[0]; // agr global variable hai to targetscope Program hoga (scope[0]) jo stack (scope) k bottom pe hai
         i++;
       }
       if (tokens[i].value === "const") {
@@ -142,30 +142,30 @@ export const generateAst = (tokens) => {
       } else if (tokens[i].type === "identifier") {
         var1.setType("let");
       }
-      const [declarator, j] = parseVariables(tokens, i, scope);
-      i = j;
+      const [declarator, j] = parseVariables(tokens, i, scope); // ye function keyword k baad ki value evaluate krke variable declarator return krta hai
+      i = j; 
       var1.pushDeclarators(declarator);
       if (
         targetScope instanceof Program &&
         scope.length > 1 &&
-        !(scope[scope.length - 1] instanceof ArrayExpression)
+        !(scope[scope.length - 1] instanceof ArrayExpression) // agr taget scope main program hai And scope stack me 1 se zyada scopes hen means ksi function body me hen And jo current scope hai wo array nai hai 
       ) {
-        targetScope.insert(var1, targetScope.body.length - 1);
+        targetScope.insert(var1, targetScope.body.length - 1); // ...to variable ko push krdia target scope se just left me ( file me just upar ) (global scope)
       } else {
-        targetScope.push(var1);
+        targetScope.push(var1); // agr global variable nai to just current scope me add
       }
       i++;
     }
     if (tokens[i]?.type === "keyword" && tokens[i]?.value === "fun") {
-      i = parseFunction(tokens, i, scope[scope.length - 1], scope);
+      i = parseFunction(tokens, i, scope[scope.length - 1], scope); 
       i++;
     }
     if (tokens[i]?.value === "}" && tokens[i]?.type === "closing_blockscope") {
-      scope.pop();
+      scope.pop(); // block statement khatam hoti hai to just scope se current scope pop krdo
       i++;
     }
     if (tokens[i]?.value === "]" && tokens[i]?.type === "closing_squarly") {
-      scope.pop();
+      scope.pop(); // same for arrays
       i++;
     }
   }
