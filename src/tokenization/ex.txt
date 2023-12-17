@@ -1,3 +1,4 @@
+
 arr = [234,'hello',6969,[3,[4,5,['pp']]], fun printName()
 {
         b = 0
@@ -13,3 +14,4 @@ fun print(name,date){
         c = 999
      }
 }
+

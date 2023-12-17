@@ -14,21 +14,21 @@
 //const output = new CodeGenerator(ast, {}, code);
 
 function insertIntoArray(arr, idx, val) {
-    if (idx > arr.length) {
-      return;
-    }
-    for (let i = arr.length; i >= idx; i--) {
-      arr[i] = arr[i - 1];
-    }
-    arr[idx] = val;
+  if (idx > arr.length) {
+    return;
   }
-  
-  let a = [];
-  insertIntoArray(a, 0, 69);
-  insertIntoArray(a, 0, 69);
-  insertIntoArray(a, 0, 69);
-  insertIntoArray(a, 0, 69);
-  insertIntoArray(a, 0, 69);
-  insertIntoArray(a, 0, 69);
-  
-  console.log(a);
+  for (let i = arr.length; i >= idx; i--) {
+    arr[i] = arr[i - 1];
+  }
+  arr[idx] = val;
+}
+
+let a = [];
+insertIntoArray(a, 0, 69);
+insertIntoArray(a, 0, 69);
+insertIntoArray(a, 0, 69);
+insertIntoArray(a, 0, 69);
+insertIntoArray(a, 0, 69);
+insertIntoArray(a, 0, 69);
+
+console.log(a);

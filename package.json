@@ -5,12 +5,16 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+      "format": "prettier --write \"src/**/*.{js,jsx}\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@babel/generator": "^7.23.3",
     "@babel/parser": "^7.23.3"
+  },
+  "devDependencies": {
+    "prettier": "^3.1.1"
   }
 }

@@ -3,7 +3,7 @@ export const keywords = [
     "const",
     "if",
     "else",
-    "elseif",
+    "else if",
     "for",
     "from",
     "to",
@@ -11,4 +11,5 @@ export const keywords = [
     "display",
     "return",
     "fun",
-]
+    "while",
+  ];
