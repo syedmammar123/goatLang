@@ -145,12 +145,12 @@ export class BinaryExpression {
 }
 
 export class LogicalExpression {
-    constructor() {
-        this.type = "LogicalExpression"
-        this.left = null
-        this.operator = null
-        this.right = null
-    }
+  constructor() {
+    this.type = "LogicalExpression";
+    this.left = null;
+    this.operator = null;
+    this.right = null;
+  }
   setLeft(left) {
     this.left = left;
   }
@@ -160,5 +160,4 @@ export class LogicalExpression {
   setOperator(operator) {
     this.operator = operator;
   }
-
 }

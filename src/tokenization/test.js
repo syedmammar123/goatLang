@@ -24,11 +24,6 @@ function insertIntoArray(arr, idx, val) {
 }
 
 let a = [];
-insertIntoArray(a, 0, 69);
-insertIntoArray(a, 0, 69);
-insertIntoArray(a, 0, 69);
-insertIntoArray(a, 0, 69);
-insertIntoArray(a, 0, 69);
-insertIntoArray(a, 0, 69);
+insertIntoArray(a, 0, 100);
 
 console.log(a);

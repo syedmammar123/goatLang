@@ -86,9 +86,9 @@ function parseIfStatements(tokens, i, currScope, scope) {
     i++;
   }
   testTokens.pop();
-    console.log(testTokens,"Testtttttttt")
+  console.log(testTokens, "Testtttttttt");
   ifStat.setTest(parseLogicalExpression(testTokens));
-    console.log(ifStat.test)
+  console.log(ifStat.test);
   if (tokens[i].type === "openening_blockscope" && tokens[i].value === "{") {
     let blockStatement = new BlockStatement();
     ifStat.setConsequent(blockStatement);
@@ -97,7 +97,6 @@ function parseIfStatements(tokens, i, currScope, scope) {
 
   return i;
 }
-
 
 export const generateAst = (tokens) => {
   let i = 0;

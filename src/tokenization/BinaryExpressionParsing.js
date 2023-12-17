@@ -1,9 +1,12 @@
-import { BinaryExpression ,LogicalExpression , StringLiteral, Identifier} from "./Classes.js";
+import {
+  BinaryExpression,
+  LogicalExpression,
+} from "./Classes.js";
 import { parse } from "@babel/parser";
 import generate, { CodeGenerator } from "@babel/generator";
 import { getNode } from "../helpers/getNode.js";
 
-//const tokens = 
+//const tokens =
 //
 //[
 //  { type: 'openeing_parenthesis', value: '(' },
@@ -40,24 +43,22 @@ import { getNode } from "../helpers/getNode.js";
 //    {type: "Number" , value : "72"},
 //]
 
- //99 + (num - 3) - (1 / (9 * 87)) ** 72
-
+//99 + (num - 3) - (1 / (9 * 87)) ** 72
 
 export function parseLogicalExpression(tokens) {
-    console.log(tokens)
+  console.log(tokens);
   if (tokens.length === 1) {
-    return getNode(tokens.pop())
+    return getNode(tokens.pop());
   }
 
-    if (tokens[0].value === "(" && tokens[tokens.length - 1].value === ")"){
-        tokens.pop()
-        tokens.shift()
-    }
+  if (tokens[0].value === "(" && tokens[tokens.length - 1].value === ")") {
+    tokens.pop();
+    tokens.shift();
+  }
 
   let token = tokens.pop();
 
   let expression = [];
-
 
   let idx = null;
   let paramCount = 0;
@@ -70,18 +71,16 @@ export function parseLogicalExpression(tokens) {
       paramCount--;
     }
     if (
-      (tokens[i].value === "&&" ||
-      tokens[i].value === "||") && (paramCount <= 0)
+      (tokens[i].value === "&&" || tokens[i].value === "||") &&
+      paramCount <= 0
     ) {
       if (!idx) {
         idx = i;
       } else if (tokens[idx].value === "&&" && tokens[i].value === "||") {
-        
         idx = i;
       }
     }
   }
-
 
   if (token?.value === ")" && !idx) {
     let paranCount = 0;
@@ -98,35 +97,30 @@ export function parseLogicalExpression(tokens) {
     expression.shift();
   }
 
-
-
-  let exp = new BinaryExpression()
-    if (idx) {
-        exp = new LogicalExpression()
+  let exp = new BinaryExpression();
+  if (idx) {
+    exp = new LogicalExpression();
     let left = tokens.slice(0, idx);
     let right = [...tokens.slice(idx + 1, tokens.length + 1), token];
 
-    exp.setLeft(parseLogicalExpression(left))
-    exp.setOperator(tokens[idx].value)
-    exp.setRight(parseLogicalExpression(right))
+    exp.setLeft(parseLogicalExpression(left));
+    exp.setOperator(tokens[idx].value);
+    exp.setRight(parseLogicalExpression(right));
   } else if (expression.length) {
-      if (!tokens.length){
-          exp = parseLogicalExpression(expression)
-      }
-      else {
-
-    exp.setRight(parseLogicalExpression(expression))
-    exp.setOperator(tokens?.pop()?.value)
-    exp.setLeft(parseLogicalExpression(tokens))
-      }
+    if (!tokens.length) {
+      exp = parseLogicalExpression(expression);
+    } else {
+      exp.setRight(parseLogicalExpression(expression));
+      exp.setOperator(tokens?.pop()?.value);
+      exp.setLeft(parseLogicalExpression(tokens));
+    }
   } else {
-    exp.setRight(getNode(token)) 
-    exp.setOperator(tokens?.pop()?.value)
-    exp.setLeft(parseLogicalExpression(tokens))
+    exp.setRight(getNode(token));
+    exp.setOperator(tokens?.pop()?.value);
+    exp.setLeft(parseLogicalExpression(tokens));
   }
   return exp;
 }
-
 
 //let ast  = parseLogicalExpression(tokens)
 //console.log(ast)
