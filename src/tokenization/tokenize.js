@@ -127,6 +127,53 @@ export function tokenize(code) {
       });
       i++;
     }
+
+    if (code[i] === "|") {
+      let temp = code[i];
+      i++;
+      if (code[i] === "|") {
+        temp = temp + "|";
+        i++;
+      }
+      if (temp.length === 1) {
+        tokens.push({
+          type: "unary_operator",
+          value: temp,
+        });
+      }
+      if (temp.length === 2) {
+        tokens.push({
+          type: "logical_operator",
+          value: temp,
+        });
+      }
+      char = "";
+      temp = "";
+    }
+
+    if (code[i] === "&") {
+      let temp = code[i];
+      i++;
+      if (code[i] === "&") {
+        temp = temp + "&";
+        i++;
+      }
+      if (temp.length === 1) {
+        tokens.push({
+          type: "unary_operator",
+          value: temp,
+        });
+      }
+      if (temp.length === 2) {
+        tokens.push({
+          type: "logical_operator",
+          value: temp,
+        });
+      }
+      char = "";
+      temp = "";
+    }
+
     if (code[i] === "=") {
       let temp = "";
       while (code[i] === "=") {

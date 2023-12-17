@@ -1,6 +1,8 @@
 import generate from "@babel/generator";
 import fs from "fs";
 import {
+  BinaryExpression,
+  IfStatement,
   ArrayExpression,
   BlockStatement,
   FunctionDeclaration,
@@ -12,6 +14,7 @@ import {
   Identifier,
 } from "./Classes.js";
 import { tokenize } from "./tokenize.js";
+import { parseLogicalExpression } from "./BinaryExpressionParsing.js";
 
 const code = fs.readFileSync("./code", { encoding: "utf8" });
 
@@ -25,7 +28,7 @@ function parseVariables(tokens, i, scope) {
   }
   i++;
   let init;
-  if (tokens[i].value === "[") { 
+  if (tokens[i].value === "[") {
     init = new ArrayExpression();
     scope.push(init);
   } else if (tokens[i]?.type === "string") {
@@ -53,7 +56,7 @@ function parseFunction(tokens, i, destScope, scope) {
     if (tokens[i].type === "identifier") {
       fun.pushParams(new Identifier(tokens[i].value));
     }
-    if (paramCount > 1000000) { 
+    if (paramCount > 1000000) {
       throw new Error(") missing!");
     }
     i++;
@@ -69,42 +72,48 @@ function parseFunction(tokens, i, destScope, scope) {
   return i;
 }
 
-//    if (tokens[i].value === '['){
-//        init = new ArrayExpression()
-//        while (tokens[i].value !== ']'){
-//            if (tokens[i].value === ',' && tokens[i].type === 'comma'){
-//                i++
-//            }
-//            if (tokens[i].type === "Number"){
-//            let temp = new NumericLiteral(tokens[i].value);
-//                init.pushElement(temp)
-//            }
-//            if (tokens[i].type === "string"){
-//            let temp = new StringLiteral(tokens[i].value);
-//                init.pushElement(temp)
-//            }
-//
-//
-//            i++
-//        }
-//        i++
-//    }
+function parseIfStatements(tokens, i, currScope, scope) {
+  let ifStat = new IfStatement();
+  currScope.push(ifStat); // ye wo scope hai jahan if declare hoga
+  i++;
+  if (tokens[i]?.value !== "(") {
+    throw new Error("Expected (");
+  }
+  i++;
+  let testTokens = [];
+  while (tokens[i].value !== "{") {
+    testTokens.push(tokens[i]);
+    i++;
+  }
+  testTokens.pop();
+  ifStat.setTest(parseLogicalExpression(testTokens));
+
+  if (tokens[i].type === "openening_blockscope" && tokens[i].value === "{") {
+    let blockStatement = new BlockStatement();
+    ifStat.setConsequent(blockStatement);
+    scope.push(ifStat.consequent); // ye is if ka apna scope hai
+  }
+
+  return i;
+}
 
 export const generateAst = (tokens) => {
   let i = 0;
   let ast = new Program();
+  let letVariables = [];
   let scope = [ast];
   while (i < tokens.length) {
-    if (tokens[i].value === "[") { // agr nested array ho to ...
+    if (tokens[i].value === "[") {
+      // agr nested array ho to ...
       let arr = new ArrayExpression();
-      scope[scope.length - 1].push(arr);  // array ko current scope me add kia
-      scope.push(arr);  // array ko current scope bnaya so that next sare elements ushi array me add hon
+      scope[scope.length - 1].push(arr); // array ko current scope me add kia
+      scope.push(arr); // array ko current scope bnaya so that next sare elements ushi array me add hon
       i++;
     }
     if (
       tokens[i].value === "," &&
       tokens[i].type === "comma" &&
-      scope[scope.length - 1] instanceof ArrayExpression // comma ( seperator ) ko array me ignore krengy 
+      scope[scope.length - 1] instanceof ArrayExpression // comma ( seperator ) ko array me ignore krengy
     ) {
       i++;
     }
@@ -128,6 +137,7 @@ export const generateAst = (tokens) => {
       tokens[i].value === "global" ||
       tokens[i].value === "const" ||
       (tokens[i].type === "identifier" &&
+        !letVariables.includes(tokens[i].value) && // its not already declared
         !(scope[scope.length - 1] instanceof ArrayExpression)) // checking that current scope array to ni bcs array me initialization nai hoskti
     ) {
       let targetScope = scope[scope.length - 1];
@@ -140,15 +150,16 @@ export const generateAst = (tokens) => {
         var1.setType("const");
         i++;
       } else if (tokens[i].type === "identifier") {
+        letVariables.push(tokens[i].value);
         var1.setType("let");
       }
       const [declarator, j] = parseVariables(tokens, i, scope); // ye function keyword k baad ki value evaluate krke variable declarator return krta hai
-      i = j; 
+      i = j;
       var1.pushDeclarators(declarator);
       if (
         targetScope instanceof Program &&
         scope.length > 1 &&
-        !(scope[scope.length - 1] instanceof ArrayExpression) // agr taget scope main program hai And scope stack me 1 se zyada scopes hen means ksi function body me hen And jo current scope hai wo array nai hai 
+        !(scope[scope.length - 1] instanceof ArrayExpression) // agr taget scope main program hai And scope stack me 1 se zyada scopes hen means ksi function body me hen And jo current scope hai wo array nai hai
       ) {
         targetScope.insert(var1, targetScope.body.length - 1); // ...to variable ko push krdia target scope se just left me ( file me just upar ) (global scope)
       } else {
@@ -157,7 +168,11 @@ export const generateAst = (tokens) => {
       i++;
     }
     if (tokens[i]?.type === "keyword" && tokens[i]?.value === "fun") {
-      i = parseFunction(tokens, i, scope[scope.length - 1], scope); 
+      i = parseFunction(tokens, i, scope[scope.length - 1], scope);
+      i++;
+    }
+    if (tokens[i]?.type === "keyword" && tokens[i]?.value === "if") {
+      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope);
       i++;
     }
     if (tokens[i]?.value === "}" && tokens[i]?.type === "closing_blockscope") {
@@ -169,6 +184,7 @@ export const generateAst = (tokens) => {
       i++;
     }
   }
+console.log(ast.body)
   return ast;
 };
 

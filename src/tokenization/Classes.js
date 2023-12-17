@@ -108,3 +108,57 @@ export class ArrayExpression {
     this.elements.push(smth);
   }
 }
+
+export class IfStatement {
+  constructor() {
+    this.type = "IfStatement";
+    this.test = null;
+    this.consequent = null;
+    this.alternate = null;
+  }
+  setTest(test) {
+    this.test = test;
+  }
+  setConsequent(consequent) {
+    this.consequent = consequent;
+  }
+  setAlternate(alternate) {
+    this.alternate = alternate;
+  }
+}
+export class BinaryExpression {
+  constructor() {
+    this.type = "BinaryExpression";
+    this.left = null;
+    this.operator = null;
+    this.right = null;
+  }
+  setLeft(left) {
+    this.left = left;
+  }
+  setRight(right) {
+    this.right = right;
+  }
+  setOperator(operator) {
+    this.operator = operator;
+  }
+}
+
+export class LogicalExpression {
+    constructor() {
+        this.type = "LogicalExpression"
+        this.left = null
+        this.operator = null
+        this.right = null
+    }
+  setLeft(left) {
+    this.left = left;
+  }
+  setRight(right) {
+    this.right = right;
+  }
+  setOperator(operator) {
+    this.operator = operator;
+  }
+
+}
