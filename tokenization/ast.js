@@ -1,6 +1,5 @@
 import generate from "@babel/generator";
 
-
 class Program {
     constructor(){
         this.type="Program"
@@ -52,16 +51,75 @@ class Identifier {
         this.name=name
     }
 }
+class IfElse{
+    constructor(){
+        this.type="IfStatement";
+        this.test=null;
+        this.consequent=null;
+        this.alternate=null;
+
+    }
+    setTest(test){
+        this.test=test;
+    }
+    setConsequent(consequent){
+        this.consequent=consequent;
+    }
+    setAlternate(alternate){
+        this.alternate=alternate;
+    }
+
+}
+class BinaryExpression{
+    constructor(){
+        this.type="BinaryExpression";
+        this.left=null;
+        this.operator=null;
+        this.right=null;
+
+    }
+    setLeft(left){
+        this.left=left;
+    }
+    setRight(right){
+        this.right=right;
+    }
+    setOperator(operator){
+        this.operator=operator;
+    }
+} 
+ class BlockStatement{
+    constructor(){
+        this.type="BlockStatement";
+        this.body=[];
+
+    }
+    push(smth){
+        this.body.push(smth)
+    }
+ }
+
 
 let tokens = [
-  { type: 'declarative_keyword', value: 'global' },
-  { type: 'declarative_keyword', value: 'const' },
-  { type: 'identifier', value: 'a' },
-  { type: 'assignment_operator', value: '=' },
-  { type: 'opening_quotation', value: "'" },
-  { type: 'string', value: 'hello world' },
-  { type: 'closing_quotation', value: "'" }
-]
+    { type: 'keyword', value: 'if' },
+    { type: 'openeing_parenthesis', value: '(' },
+    { type: 'identifier', value: 'a' },
+    { type: 'Number', value: 3 },
+    { type: 'closing_parenthesis', value: ')' },
+    { type: 'openening_blockscope', value: '{' },
+    { type: 'closing_blockscope', value: '}' },
+    { type: 'keyword', value: 'elseif' },
+    { type: 'openeing_parenthesis', value: '(' },
+    { type: 'identifier', value: 'a' },
+    { type: 'less_than', value: '<' },
+    { type: 'identifier', value: 'b' },
+    { type: 'closing_parenthesis', value: ')' },
+    { type: 'openening_blockscope', value: '{' },
+    { type: 'closing_blockscope', value: '}' },
+    { type: 'keyword', value: 'else' },
+    { type: 'openening_blockscope', value: '{' },
+    { type: 'closing_blockscope', value: '}' }
+  ]
 
 
 export const generateAst = (tokens) => {
@@ -72,8 +130,7 @@ export const generateAst = (tokens) => {
             let var1 = new VariableDeclaration()
             i++;
             if(tokens[i].value === "const"){
-                var1.setType("const");
-                
+                var1.setType("const");  
             }
             let declarator1 = new VariableDeclarator();
             i++;
@@ -97,6 +154,14 @@ export const generateAst = (tokens) => {
             } 
             var1.pushDeclarators(declarator1);
             ast.push(var1)
+        }
+///////////////////////////////IF ELSE///////////////////////
+        if (tokens[i].value === "if"){
+            let ifElse= new IfElse();
+            i++;
+            
+            
+
         }
         i++;
     }

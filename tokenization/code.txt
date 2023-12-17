@@ -1,7 +1,12 @@
-global const number=2304
-if (a == 3)<
-    const str = 'helloworld'
-    display('hahaha hehehe')
- >
+
+if (a == 3){
+ 
+ }
+ elseif( a< b){
+
+ } else{
+
+ }
+
 
  
