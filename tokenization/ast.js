@@ -60,6 +60,22 @@ class NumericLiteral {
     }
 }
 
+class AssignmentExpression{
+    constructor( left , right){
+        this.type="AssignmentExpression";
+        this.operator="=";
+        this.left=left;
+        this.right=right;
+    }
+
+    setLeft(left){
+        this.left = left;
+    }
+    setRight(right){
+        this.right=right;
+    }
+}
+
 class BinaryExpression {
     constructor(operator, left, right) {
         this.type = 'BinaryExpression';
@@ -96,10 +112,29 @@ class ForLoopStepBinaryExpression {
 }
 
 
-class BinaryExpressionParser {
+class BinaryExpParserForLoop {
     static parse(tokens, i , op , forloopId , forloopStep) {
         let right;
         let operator;
+        let left;
+        if (tokens[i].type === 'OPENPAREN') {
+            i++;
+            left = BinaryExpressionParser.parse(tokens, i);
+            i++;
+            
+        } else if (tokens[i].type === 'NUMBER' && forloopStep=='' || tokens[i].type === 'IDENTIFIER' ) {
+            left = tokens[i].type === 'NUMBER' ? forloopId : new Identifier(tokens[i].value);
+            
+        }
+       
+        else if ( (tokens[i].value === "by" && forloopId!='') || (tokens[i].type === 'NUMBER' && forloopStep!='')){
+            left=forloopId;
+          
+        }
+         else {
+            throw new Error('Unexpected token in expression.');
+        }
+       
 
         if (tokens[i].type === 'OPENPAREN') {
             i++;
@@ -117,42 +152,11 @@ class BinaryExpressionParser {
             }
            
             
-            right = ForLoopStepBinaryExpression.stepParse(forloopId, tokens[i].value, forloopStep);
+            right = ForLoopStepBinaryExpression.stepParse(forloopId, new NumericLiteral(tokens[i].value), forloopStep);
         }
-
-
-        if (tokens[i].type === 'OPERATOR') {
-            operator = tokens[i].value;
-            i++;
-        }else if(op!='' ){
-            operator= op;
-        
-
-        }
-         else {
-            throw new Error('Expected an operator in the binary expression.');
-        }
-
-        let left;
-
-
-        if (tokens[i].type === 'OPENPAREN') {
-            i++;
-            left = BinaryExpressionParser.parse(tokens, i);
-            i++;
-        } else if (tokens[i].type === 'NUMBER' && forloopStep=='' || tokens[i].type === 'IDENTIFIER' ) {
-            left = tokens[i].type === 'NUMBER' ? new NumericLiteral(tokens[i].value) : new Identifier(tokens[i].value);
-            i++;
-            
-        }
+        operator= op;
+      
        
-        else if ( (tokens[i].value === "by" && forloopId!='') || (tokens[i].type === 'NUMBER' && forloopStep!='')){
-            left=forloopId;
-          
-        }
-         else {
-            throw new Error('Unexpected token in expression.');
-        }
 
         return new BinaryExpression(operator, left, right);
     }
@@ -188,11 +192,12 @@ let tokens = [
     { type: 'KEYWORD', value: 'for' },    
     { type: 'IDENTIFIER', value: 'i' },   
     { type: 'KEYWORD', value: 'from' },   
-    { type: 'NUMBER', value: 10 },
+    { type: 'NUMBER', value: 1 },
     { type: 'KEYWORD', value: 'to' },     
-    { type: 'NUMBER', value: 1 },        
-    { type: 'KEYWORD', value: 'by' },     
-    { type: 'NUMBER', value: -2 },
+    { type: 'NUMBER', value: 10 },        
+    { type: 'KEYWORD', value: 'by' },
+    {type:'OPERATOR' , value:'/'},
+    { type: 'NUMBER', value: 3 },
     { type: 'DELIMITER', value: '<' },    
     { type: 'KEYWORD', value: 'display' },
     { type: 'OPENPAREN', value: '(' },
@@ -213,66 +218,116 @@ let tokens = [
             i++;
 
             // Parse initialization with binary expression support
-            if (tokens[i].type === 'IDENTIFIER') {
-                let init = new VariableDeclaration('let');
-                let declarator = new VariableDeclarator();
+            // if (tokens[i].type === 'IDENTIFIER') {
+            //     let init = new VariableDeclaration('let');
+            //     let declarator = new VariableDeclarator();
            
-                let id = new Identifier(tokens[i].value);
-                declarator.setId(id);
-                let val;
-                if(tokens[i+1].value != 'from'){
-                    throw new Error('expected "from" after loop initialization.');
+            //     let id = new Identifier(tokens[i].value);
+            //     declarator.setId(id);
+            //     let val;
+            //     if(tokens[i+1].value != 'from'){
+            //         throw new Error('expected "from" after loop initialization.');
+            //     }
+            //     else{
+            //         if(tokens[i+2].type == 'NUMBER')
+            //         {
+            //              val = tokens[i+2].value;
+            //         }
+            //         else{
+            //             throw new Error('expected a number after "from"')
+            //         }
+            //     }
+            //     declarator.setInit(val);
+            //     init.pushDeclarators(declarator);
+            //     forStatement.setInit(init);
+            //     console.log(forStatement.init , "forloop init...");
+            //     console.log("\n\n\n");
+
+            // } else {
+            //     throw new Error('Expected an identifier for loop initialization.');
+            // }
+
+            // i++;
+            // if (tokens[i].value !== 'from') {
+            //     throw new Error('Expected "from" after loop initialization.');
+            // }
+
+            // i=i+2;
+           
+            // if (tokens[i].value !== 'to') {
+            //     throw new Error('Expected "to" after loop initialization value.');
+            // }
+            if (tokens[i].type === 'IDENTIFIER') {
+                let init = new AssignmentExpression();
+                let left = new Identifier(tokens[i].value);
+                let right;
+
+                i++; // Move to the next token
+
+                if (tokens[i].value !== 'from') {
+                    throw new Error('Expected "from" after loop initialization.');
+                }
+
+                i++; // Move to the numeric value
+                if(tokens[i].type="NumericLiteral"){
+                 right = new NumericLiteral(tokens[i].value);
+                 i++;
                 }
                 else{
-                    if(tokens[i+2].type == 'NUMBER')
-                    {
-                         val = tokens[i+2].value;
-                    }
-                    else{
-                        throw new Error('expected a number after "from"')
-                    }
+                throw new Error("Expected a number after from keyword");
                 }
-                declarator.setInit(val);
-                init.pushDeclarators(declarator);
-                forStatement.setInit(init);
-                console.log(forStatement.init , "forloop init...");
-                console.log("\n\n\n");
+               
 
+                init.setLeft(left);
+                init.setRight(right);
+                forStatement.setInit(init);
+
+                console.log(forStatement.init, "for loop init...");
+                console.log("\n\n\n");
             } else {
                 throw new Error('Expected an identifier for loop initialization.');
             }
 
-            i++;
-            if (tokens[i].value !== 'from') {
-                throw new Error('Expected "from" after loop initialization.');
-            }
-
-            i=i+2;
-           
+            // Parse condition with binary expression support
+          
             if (tokens[i].value !== 'to') {
                 throw new Error('Expected "to" after loop initialization value.');
             }
-
-            // Parse condition with binary expression support
+            else{
             i++;
-         
-           let cond = checkCond(forStatement.init.declarations[0].init , tokens[i].value);
-           let _oper = cond?'<':'>';
-            let conditionValue = BinaryExpressionParser.parse(tokens, i , _oper , forStatement.init.declarations[0].id ,'');
+            let cond = checkCond(forStatement.init.right.value , tokens[i].value);
+            let _oper = cond?'<':'>';
+            let conditionValue = BinaryExpParserForLoop.parse(tokens, i , _oper , forStatement.init.left ,'');
             forStatement.setTest(conditionValue);
-            console.log(forStatement.test , "forloop condition...");
-            console.log("\n\n\n");
-
             i++;
+             console.log(forStatement.test , "forloop condition...");
+             console.log("\n\n\n");
+            }
+           
             if (tokens[i].value !== 'by') {
                 throw new Error('Expected "by" after loop condition.');
             }
 
             // Parse update with binary expression support
             i++;
+            let updateValue;
+            if(tokens[i].type=="OPERATOR")
+            {
+               
+                 updateValue = BinaryExpParserForLoop.parse(tokens, i+1 , '=' , forStatement.init.left , tokens[i].value );
+                 i++;
 
-            let step= checkStep(tokens[i].value ,forStatement.init.declarations[0].init , tokens[i-2].value );
-            let updateValue = BinaryExpressionParser.parse(tokens, i , '=' , forStatement.init.declarations[0].id , step );
+            }
+           
+            else if(tokens[i].type=="NUMBER"){
+           
+                let step= checkStep(tokens[i].value ,forStatement.init.right.value , forStatement.test.right.value );
+               
+                updateValue = BinaryExpParserForLoop.parse(tokens, i , '=' , forStatement.init.left , step );
+
+            }
+
+           
             forStatement.setUpdate(updateValue);
             console.log(forStatement.update , "forloop update...");
             console.log("\n\n\n");
@@ -362,7 +417,7 @@ console.log(ast1);
 // console.log("global const a = 'hello world'")
 // console.log("\n\n\n")
 // console.log("Output")
-console.log(generate.default(ast1).code)
+console.log(generate.default(ast1).code , "aqsaaaa")
 console.log("\n\n\n")
 
 
