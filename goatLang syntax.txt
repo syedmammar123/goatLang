@@ -1,0 +1,35 @@
+-----------------------------------------variables dec 
+
+a=1; **local scope predefined
+global const a=1; 
+rules: Donot start with number,a special character, keywords
+
+-----------------------------------------if statement
+if()<>
+else if()<>
+else<>
+
+-----------------------------------------loops
+for i from 1 to 10 by 2<
+    display(i); 
+>
+
+-----------------------------------------functions
+fun add()<{
+    return "abc"; 
+}>
+
+
+--------------------------------print statement
+display()
+
+-----------------------------------------arrays 
+[a,b,c] 
+
+-----------------------------------------objects
+{}
+
+---------------------------------------comments
+**
+
+//checking push request
