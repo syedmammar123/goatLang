@@ -85,6 +85,13 @@ export function tokenize(code) {
       });
       i++;
     }
+    if (code[i] === ".") {
+      tokens.push({
+        type: "dot_operator",
+        value: ".",
+      });
+      i++;
+    }
     if (code[i] === "<") {
       tokens.push({
         type: "less_than",

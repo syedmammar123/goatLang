@@ -161,3 +161,42 @@ export class LogicalExpression {
     this.operator = operator;
   }
 }
+
+
+export class ExpressionStatement{
+    constructor(){
+        this.type="ExpressionStatement";
+        this.expression = null;
+    }
+    setExpression(exp){
+        this.expression = exp;
+    }
+}
+
+export class CallExpression{
+    constructor(){
+        this.type="CallExpression";
+        this.callee=null;
+        this.arguments=[];
+    }
+    setCallee(callee){
+        this.callee = callee;
+    }
+    pushArg(smth){
+        this.arguments.push(smth)
+    }
+}
+
+export class MemberExpression{
+    constructor(){
+        this.type="MemberExpression";
+        this.object;
+        this.property;
+    }
+    setObj(obj){
+        this.object = obj
+    }
+    setProperty(prop){
+        this.property = prop
+    }
+}

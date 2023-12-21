@@ -17,7 +17,6 @@ import { tokenize } from "./tokenize.js";
 import { parseLogicalExpression } from "./BinaryExpressionParsing.js";
 
 const code = fs.readFileSync("./code", { encoding: "utf8" });
-
 function parseVariables(tokens, i, scope) {
   let declarator1 = new VariableDeclarator();
   let id1 = new Identifier(tokens[i].value);
@@ -39,6 +38,8 @@ function parseVariables(tokens, i, scope) {
   declarator1.setInit(init);
   return [declarator1, i];
 }
+
+
 
 function parseFunction(tokens, i, destScope, scope) {
   const fun = new FunctionDeclaration();
@@ -86,9 +87,7 @@ function parseIfStatements(tokens, i, currScope, scope) {
     i++;
   }
   testTokens.pop();
-  console.log(testTokens, "Testtttttttt");
   ifStat.setTest(parseLogicalExpression(testTokens));
-  console.log(ifStat.test);
   if (tokens[i].type === "openening_blockscope" && tokens[i].value === "{") {
     let blockStatement = new BlockStatement();
     ifStat.setConsequent(blockStatement);

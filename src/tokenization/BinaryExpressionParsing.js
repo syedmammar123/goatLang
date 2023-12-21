@@ -46,7 +46,6 @@ import { getNode } from "../helpers/getNode.js";
 //99 + (num - 3) - (1 / (9 * 87)) ** 72
 
 export function parseLogicalExpression(tokens) {
-  console.log(tokens);
   if (tokens.length === 1) {
     return getNode(tokens.pop());
   }
