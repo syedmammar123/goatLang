@@ -35,3 +35,43 @@ else{
 fun print(name){
 
 }
+a = 4
+b = 3
+
+temp = 0
+
+temp = a + 1
+a = b
+b = a
+temp = 0
+
+temp = a === b > c === b
+
+temp2 = 3
+
+
+
+
+
+
+
+
+
+discarded code
+
+//        if (
+//            tokens[i].type === 'Number' &&
+//            scope[scope.length - 1] instanceof ArrayExpression // numbers ko current scope k array me add krengy
+//        ) {
+//            let temp = new NumericLiteral(tokens[i].value)
+//            scope[scope.length - 1].push(temp)
+//            i++
+//        }
+//        if (
+//            tokens[i].type === 'string' &&
+//            scope[scope.length - 1] instanceof ArrayExpression // same for strings
+//        ) {
+//            let temp = new StringLiteral(tokens[i].value)
+//            scope[scope.length - 1].push(temp)
+//            i++
+//        }

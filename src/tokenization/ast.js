@@ -1,302 +1,389 @@
-import generate from "@babel/generator";
-import fs from "fs";
+import generate from '@babel/generator'
+import { parseMemberExpression } from './MemberExpressionParsing.js'
+import fs from 'fs'
 import {
-  AssignmentExpression,
-  BinaryExpression,
-  IfStatement,
-  ArrayExpression,
-  BlockStatement,
-  FunctionDeclaration,
-  Program,
-  VariableDeclaration,
-  VariableDeclarator,
-  StringLiteral,
-  NumericLiteral,
-  Identifier,
-  ExpressionStatement,
-} from "./Classes.js";
-import { tokenize } from "./tokenize.js";
-import { parseLogicalExpression } from "./BinaryExpressionParsing.js";
-import { getNode } from "../helpers/getNode.js";
-import exp from "constants";
-import { keywords } from "../environment/environment.js";
+    AssignmentExpression,
+    ReturnStatement,
+    IfStatement,
+    ArrayExpression,
+    BlockStatement,
+    FunctionDeclaration,
+    Program,
+    VariableDeclaration,
+    VariableDeclarator,
+    StringLiteral,
+    NumericLiteral,
+    Identifier,
+    ExpressionStatement,
+} from './Classes.js'
+import { tokenize } from './tokenize.js'
+import { parseLogicalExpression } from './BinaryExpressionParsing.js'
+import { getNode } from '../helpers/getNode.js'
+import { keywords } from '../environment/environment.js'
 
-const code = fs.readFileSync("./code", { encoding: "utf8" });
+const code = fs.readFileSync('./code', { encoding: 'utf8' })
 
 function parseVariables(tokens, i, scope) {
-  let declarator1 = new VariableDeclarator();
-  let id1 = new Identifier(tokens[i].value);
-  declarator1.setId(id1);
-  i++;
-  if (tokens[i].value !== "=") {
-    throw new Error("expected =");
-  }
-  i++;
-  let init;
-  if (tokens[i].value === "[") {
-    init = new ArrayExpression();
-    scope.push(init);
-  } else if (tokens[i]?.type === "string") {
-    init = new StringLiteral(tokens[i].value);
-  } else if (tokens[i]?.type === "Number") {
-    init = new NumericLiteral(tokens[i].value);
-  }
-  declarator1.setInit(init);
-  return [declarator1, i];
+    let declarator1 = new VariableDeclarator()
+    let id1 = new Identifier(tokens[i].value)
+    declarator1.setId(id1)
+    i++
+    if (tokens[i]?.value !== '=') {
+        throw new Error('expected =')
+    }
+    i++
+    let init
+    if (tokens[i].value === '[') {
+        init = new ArrayExpression()
+        scope.push(init)
+    } else if (tokens[i]?.type === 'string') {
+        init = new StringLiteral(tokens[i].value)
+    } else if (tokens[i]?.type === 'Number') {
+        init = new NumericLiteral(tokens[i].value)
+    }
+    declarator1.setInit(init)
+    return [declarator1, i]
 }
 
 function parseFunction(tokens, i, destScope, scope) {
-  const fun = new FunctionDeclaration();
-  destScope.push(fun); // ye wo scope hai jahan function declare hoga
-  i++;
-  const id = new Identifier(tokens[i].value);
-  fun.setId(id);
-  i++;
-  if (tokens[i].value !== "(") {
-    throw new Error("( expected");
-  }
-  i++;
-  let paramCount = 0;
-  while (tokens[i].value !== ")") {
-    if (tokens[i].type === "identifier") {
-      fun.pushParams(new Identifier(tokens[i].value));
+    const fun = new FunctionDeclaration()
+    destScope.push(fun) // ye wo scope hai jahan function declare hoga
+    i++
+    const id = new Identifier(tokens[i].value)
+    fun.setId(id)
+    i++
+    if (tokens[i].value !== '(') {
+        throw new Error('( expected')
     }
-    if (paramCount > 1000000) {
-      throw new Error(") missing!");
+    i++
+    let paramCount = 0
+    while (tokens[i].value !== ')') {
+        if (tokens[i].type === 'identifier') {
+            fun.pushParams(new Identifier(tokens[i].value))
+        }
+        if (paramCount > 1000000) {
+            throw new Error(') missing!')
+        }
+        i++
+        paramCount++
     }
-    i++;
-    paramCount++;
-  }
 
-  i++;
-  if (tokens[i].type === "openening_blockscope" && tokens[i].value === "{") {
-    let blockStatement = new BlockStatement();
-    fun.setScope(blockStatement);
-    scope.push(blockStatement); // ye is function ka apna scope hai
-  }
-  return i;
+    i++
+    if (tokens[i].type === 'openening_blockscope' && tokens[i].value === '{') {
+        let blockStatement = new BlockStatement()
+        fun.setScope(blockStatement)
+        scope.push(blockStatement) // ye is function ka apna scope hai
+    }
+    return i
 }
 
 function getCurrentIf(parentIf) {
-  if (!parentIf?.alternate) {
-    return parentIf;
-  }
+    if (!parentIf?.alternate) {
+        return parentIf
+    }
 
-  return getCurrentIf(parentIf.alternate);
+    return getCurrentIf(parentIf.alternate)
 }
 
-function parseIfStatements(tokens, i, currScope, scope, elf, isElse, ast) {
-  if (isElse) {
-    i++;
-    let blockStatement = new BlockStatement();
-    let currIf = getCurrentIf(currScope.body[currScope.body.length - 1]);
-    currIf.setAlternate(blockStatement);
-    scope.push(currIf.alternate);
-    return i;
-  }
-  let ifStat = new IfStatement();
-  if (elf) {
-    let currIf = getCurrentIf(currScope.body[currScope.body.length - 1]);
-    currIf.setAlternate(ifStat);
-  } else {
-    currScope.push(ifStat); // ye wo scope hai jahan if declare hoga
-  }
-  i++;
-  if (tokens[i]?.value !== "(") {
-    throw new Error("Expected (");
-  }
-  i++;
-  let testTokens = [];
-  while (tokens[i].value !== "{") {
-    testTokens.push(tokens[i]);
-    i++;
-  }
-  testTokens.pop();
-  ifStat.setTest(parseLogicalExpression(testTokens));
+function parseIfStatements(tokens, i, currScope, scope, elf, isElse) {
+    if (isElse) {
+        i++
+        let blockStatement = new BlockStatement()
+        let currIf = getCurrentIf(currScope.body[currScope.body.length - 1])
+        currIf.setAlternate(blockStatement)
+        scope.push(currIf.alternate)
+        return i
+    }
+    let ifStat = new IfStatement()
+    if (elf) {
+        let currIf = getCurrentIf(currScope.body[currScope.body.length - 1])
+        currIf.setAlternate(ifStat)
+    } else {
+        currScope.push(ifStat) // ye wo scope hai jahan if declare hoga
+    }
+    i++
+    if (tokens[i]?.value !== '(') {
+        throw new Error('Expected (')
+    }
+    i++
+    let testTokens = []
+    while (tokens[i].value !== '{') {
+        testTokens.push(tokens[i])
+        i++
+    }
+    testTokens.pop()
+    ifStat.setTest(parseLogicalExpression(testTokens))
 
-  if (tokens[i].type === "openening_blockscope" && tokens[i].value === "{") {
-    let blockStatement = new BlockStatement();
-    ifStat.setConsequent(blockStatement);
-    scope.push(ifStat.consequent); // ye is if ka apna scope hai
-  }
-  return i;
+    if (tokens[i].type === 'openening_blockscope' && tokens[i].value === '{') {
+        let blockStatement = new BlockStatement()
+        ifStat.setConsequent(blockStatement)
+        scope.push(ifStat.consequent) // ye is if ka apna scope hai
+    }
+    return i
 }
 
 export const generateAst = (tokens) => {
-  let i = 0;
-  let ast = new Program();
-  let variables = [];
-  let scope = [ast];
-  while (i < tokens.length) {
-    if (tokens[i].value === "[") {
-      // agr nested array ho to ...
-      let arr = new ArrayExpression();
-      scope[scope.length - 1].push(arr); // array ko current scope me add kia
-      scope.push(arr); // array ko current scope bnaya so that next sare elements ushi array me add hon
-      i++;
-    }
-    if (
-      tokens[i].value === "," &&
-      tokens[i].type === "comma" &&
-      scope[scope.length - 1] instanceof ArrayExpression // comma ( seperator ) ko array me ignore krengy
-    ) {
-      i++;
-    }
-    if (
-      tokens[i].type === "Number" &&
-      scope[scope.length - 1] instanceof ArrayExpression // numbers ko current scope k array me add krengy
-    ) {
-      let temp = new NumericLiteral(tokens[i].value);
-      scope[scope.length - 1].push(temp);
-      i++;
-    }
-    if (
-      tokens[i].type === "string" &&
-      scope[scope.length - 1] instanceof ArrayExpression // same for strings
-    ) {
-      let temp = new StringLiteral(tokens[i].value);
-      scope[scope.length - 1].push(temp);
-      i++;
-    }
-
-    if (
-      tokens[i].type === "identifier" &&
-      variables.includes(tokens[i].value)
-    ) {
-      const expressionExp = new ExpressionStatement();
-      const assignmentExp = new AssignmentExpression();
-      expressionExp.setExpression(assignmentExp);
-      assignmentExp.setLeft(getNode(tokens[i]));
-      scope[scope.length - 1].push(expressionExp);
-      i++;
-      if (tokens[i]?.value !== "=") {
-        throw new Error("= exprected.");
-      }
-      i++;
-      let expTokens = [];
-      while (true) {
-        if (
-          ((expTokens[expTokens.length - 1]?.type === "identifier" ||
-            expTokens[expTokens.length - 1]?.type === "string" ||
-            expTokens[expTokens.length - 1]?.type === "Number") &&
-            (tokens[i]?.type === "identifier" ||
-              tokens[i]?.type === "string" ||
-              tokens[i]?.type === "Number" ||
-              keywords?.includes(tokens[i]?.value))) ||
-          tokens.length <= i
-        ) {
-          break;
+    let i = 0
+    let ast = new Program()
+    let variables = []
+    let scope = [ast]
+    while (i < tokens.length) {
+        if (tokens[i].value === '[') {
+            // agr nested array ho to ...
+            let arr = new ArrayExpression()
+            scope[scope.length - 1].push(arr) // array ko current scope me add kia
+            scope.push(arr) // array ko current scope bnaya so that next sare elements ushi array me add hon
+            i++
         }
-        expTokens.push(tokens[i]);
-        i++;
-      }
+        if (
+            tokens[i].value === ',' &&
+            tokens[i].type === 'comma' &&
+            scope[scope.length - 1] instanceof ArrayExpression // comma ( seperator ) ko array me ignore krengy
+        ) {
+            i++
+        }
 
-      if (expTokens.length === 1) {
-        assignmentExp.setRight(getNode(expTokens[0]));
-      } else {
-        assignmentExp.setRight(parseLogicalExpression(expTokens));
-      }
-    }
+        if (
+            ((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) ||
+                tokens[i].type === 'Number' ||
+                tokens[i].type === 'string') &&
+            tokens[i + 1].value !== '='
+        ) {
+            let expTokens = []
+            while (true) {
+                if (
+                    ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+                        expTokens[expTokens.length - 1]?.type === 'string' ||
+                        expTokens[expTokens.length - 1]?.type === 'Number') &&
+                        (tokens[i]?.type === 'identifier' ||
+                            tokens[i]?.type === 'string' ||
+                            tokens[i]?.type === 'Number' ||
+                            keywords?.includes(tokens[i]?.value))) ||
+                    tokens.length <= i ||
+                    tokens[i].value === ']' ||
+                    tokens[i].value === ','
+                ) {
+                    break
+                }
+                expTokens.push(tokens[i])
+                i++
+            }
 
-    if (
-      tokens[i]?.value === "global" ||
-      tokens[i]?.value === "const" ||
-      (tokens[i]?.type === "identifier" &&
-        !variables.includes(tokens[i].value) && // its not already declared
-        !(scope[scope.length - 1] instanceof ArrayExpression)) // checking that current scope array to ni bcs array me initialization nai hoskti
-    ) {
-      let targetScope = scope[scope.length - 1];
-      let var1 = new VariableDeclaration();
-      if (tokens[i].value === "global") {
-        targetScope = scope[0]; // agr global variable hai to targetscope Program hoga (scope[0]) jo stack (scope) k bottom pe hai
-        i++;
-      }
-      if (tokens[i].value === "const") {
-        var1.setType("const");
-        i++;
-      } else if (tokens[i].type === "identifier") {
-        var1.setType("let");
-      }
-      const [declarator, j] = parseVariables(tokens, i, scope); // ye function keyword k baad ki value evaluate krke variable declarator return krta hai
-      i = j;
-      variables.push(declarator.id.name);
-      var1.pushDeclarators(declarator);
-      if (
-        targetScope instanceof Program &&
-        scope.length > 1 &&
-        !(scope[scope.length - 1] instanceof ArrayExpression) // agr taget scope main program hai And scope stack me 1 se zyada scopes hen means ksi function body me hen And jo current scope hai wo array nai hai
-      ) {
-        targetScope.insert(var1, targetScope.body.length - 1); // ...to variable ko push krdia target scope se just left me ( file me just upar ) (global scope)
-      } else {
-        targetScope.push(var1); // agr global variable nai to just current scope me add
-      }
-      i++;
-    }
-    if (tokens[i]?.type === "keyword" && tokens[i]?.value === "fun") {
-      i = parseFunction(tokens, i, scope[scope.length - 1], scope);
-      i++;
-    }
-    if (tokens[i]?.type === "keyword" && tokens[i]?.value === "if") {
-      i = parseIfStatements(
-        tokens,
-        i,
-        scope[scope.length - 1],
-        scope,
-        false,
-        false,
-        ast,
-      );
-      i++;
-    }
-    if (tokens[i]?.type === "keyword" && tokens[i]?.value === "elf") {
-      i = parseIfStatements(
-        tokens,
-        i,
-        scope[scope.length - 1],
-        scope,
-        true,
-        false,
-        ast,
-      );
-      i++;
-    }
-    if (tokens[i]?.type === "keyword" && tokens[i]?.value === "else") {
-      i = parseIfStatements(
-        tokens,
-        i,
-        scope[scope.length - 1],
-        scope,
-        false,
-        true,
-        ast,
-      );
-      i++;
-    }
-    if (tokens[i]?.value === "}" && tokens[i]?.type === "closing_blockscope") {
-      scope.pop(); // block statement khatam hoti hai to just scope se current scope pop krdo
-      i++;
-    }
-    if (tokens[i]?.value === "]" && tokens[i]?.type === "closing_squarly") {
-      scope.pop(); // same for arrays
-      i++;
-    }
-  }
-  return ast;
-};
+            if (expTokens.length === 1) {
+                scope[scope.length - 1].push(getNode(expTokens[0]))
+            } else {
+                scope[scope.length - 1].push(parseLogicalExpression(expTokens))
+            }
+        }
 
-const generatedTokens = tokenize(code);
-console.log(generatedTokens);
+        if (tokens[i]?.type === 'identifier' && variables.includes(tokens[i]?.value) && tokens[i + 1]?.value === '=') {
+            // assignment expression k lie
+            const expressionExp = new ExpressionStatement()
+            const assignmentExp = new AssignmentExpression()
+            expressionExp.setExpression(assignmentExp)
+            assignmentExp.setLeft(getNode(tokens[i]))
+            scope[scope.length - 1].push(expressionExp)
+            i++
+            if (tokens[i]?.value !== '=') {
+                throw new Error('= exprected.')
+            }
+            i++
+            let expTokens = []
+            while (true) {
+                if (
+                    ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+                        expTokens[expTokens.length - 1]?.type === 'string' ||
+                        expTokens[expTokens.length - 1]?.type === 'Number') &&
+                        (tokens[i]?.type === 'identifier' ||
+                            tokens[i]?.type === 'string' ||
+                            tokens[i]?.type === 'Number' ||
+                            keywords?.includes(tokens[i]?.value))) ||
+                    tokens.length <= i
+                ) {
+                    break
+                }
+                expTokens.push(tokens[i])
+                i++
+            }
+            let isExpLogical = false
+            expTokens.forEach((token) => {
+                if (
+                    token.value === '||' ||
+                    token.value === '&&' ||
+                    token.value === '==' ||
+                    token.value === '===' ||
+                    token.value === '!'
+                ) {
+                    isExpLogical = true
+                }
+            })
+            if (expTokens.length === 1) {
+                assignmentExp.setRight(getNode(expTokens[0]))
+            } else {
+                if (isExpLogical) {
+                    assignmentExp.setRight(parseLogicalExpression(expTokens))
+                } else {
+                    assignmentExp.setRight(parseMemberExpression(expTokens, 0))
+                }
+            }
+        }
 
-let ast1 = generateAst(generatedTokens);
-console.log(ast1.body);
+        if (
+            tokens[i]?.value === 'global' ||
+            tokens[i]?.value === 'const' ||
+            (tokens[i]?.type === 'identifier' &&
+                !variables.includes(tokens[i].value) && // its not already declared
+                !(scope[scope.length - 1] instanceof ArrayExpression)) // checking that current scope array to ni bcs array me initialization nai hoskti
+        ) {
+            let targetScope = scope[scope.length - 1]
+            let var1 = new VariableDeclaration()
+            if (tokens[i].value === 'global') {
+                targetScope = scope[0] // agr global variable hai to targetscope Program hoga (scope[0]) jo stack (scope) k bottom pe hai
+                i++
+            }
+            if (tokens[i].value === 'const') {
+                var1.setType('const')
+                i++
+            } else if (tokens[i].type === 'identifier') {
+                var1.setType('let')
+            }
+            const [declarator, j] = parseVariables(tokens, i, scope) // ye function keyword k baad ki value evaluate krke variable declarator return krta hai
+            i = j
+            variables.push(declarator.id.name)
+            var1.pushDeclarators(declarator)
+            if (
+                targetScope instanceof Program &&
+                scope.length > 1 &&
+                !(scope[scope.length - 1] instanceof ArrayExpression) // agr taget scope main program hai And scope stack me 1 se zyada scopes hen means ksi function body me hen And jo current scope hai wo array nai hai
+            ) {
+                targetScope.insert(var1, targetScope.body.length - 1) // ...to variable ko push krdia target scope se just left me ( file me just upar ) (global scope)
+            } else {
+                targetScope.push(var1) // agr global variable nai to just current scope me add
+            }
+            i++
+        }
+        if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
+            i = parseFunction(tokens, i, scope[scope.length - 1], scope)
+            i++
+        }
+        if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'if') {
+            i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false, false)
+            i++
+        }
+        if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'elf') {
+            i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, true, false)
+            i++
+        }
+        if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'else') {
+            i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false, true)
+            i++
+        }
+        if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'return') {
+            const returnStat = new ReturnStatement()
+            scope[scope.length - 1].push(returnStat)
+            i++
+            if (tokens[i].value === '}') {
+                returnStat.setArgument(null)
+            }
+            if (
+                (tokens[i].type === 'identifier' ||
+                    (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
+                !variables.includes(tokens[i].value)
+            ) {
+                throw new Error('Can not declare variable in return Statement! ')
+            }
+            // expression stat start
+            if (tokens[i].type === 'identifier' && variables.includes(tokens[i].value) && tokens[i + 1].value === '=') {
+                const assignmentExp = new AssignmentExpression()
+                assignmentExp.setLeft(getNode(tokens[i]))
+                returnStat.setArgument(assignmentExp)
+                i++
+                i++
+                let expTokens = []
+                while (true) {
+                    if (
+                        ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+                            expTokens[expTokens.length - 1]?.type === 'string' ||
+                            expTokens[expTokens.length - 1]?.type === 'Number') &&
+                            (tokens[i]?.type === 'identifier' ||
+                                tokens[i]?.type === 'string' ||
+                                tokens[i]?.type === 'Number' ||
+                                keywords?.includes(tokens[i]?.value))) ||
+                        tokens.length <= i ||
+                        tokens[i].value === '}'
+                    ) {
+                        break
+                    }
+                    expTokens.push(tokens[i])
+                    i++
+                }
 
-console.log("\n\n\n");
-console.log("Input");
-console.log(code);
-console.log("\n");
-console.log("Output");
-console.log(generate.default(ast1).code);
-console.log("\n\n\n");
+                if (expTokens.length === 1) {
+                    assignmentExp.setRight(getNode(expTokens[0]))
+                } else {
+                    assignmentExp.setRight(parseLogicalExpression(expTokens))
+                }
+            }
+
+            if (tokens[i].type === 'Number' || tokens[i].type === 'string' || tokens[i].type === 'identifier') {
+                let expTokens = []
+                while (true) {
+                    if (
+                        ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+                            expTokens[expTokens.length - 1]?.type === 'string' ||
+                            expTokens[expTokens.length - 1]?.type === 'Number') &&
+                            (tokens[i]?.type === 'identifier' ||
+                                tokens[i]?.type === 'string' ||
+                                tokens[i]?.type === 'Number' ||
+                                keywords?.includes(tokens[i]?.value))) ||
+                        tokens.length <= i ||
+                        tokens[i].value === '}'
+                    ) {
+                        break
+                    }
+                    expTokens.push(tokens[i])
+                    i++
+                }
+
+                if (expTokens.length === 1) {
+                    returnStat.setArgument(getNode(expTokens[0]))
+                } else {
+                    returnStat.setArgument(parseLogicalExpression(expTokens))
+                }
+            }
+            if (tokens[i].value === '[') {
+                // agr nested array ho to ...
+                let arr = new ArrayExpression()
+                returnStat.setArgument(arr) // array ko current scope me add kia
+                scope.push(arr) // array ko current scope bnaya so that next sare elements ushi array me add hon
+                i++
+            }
+        }
+        if (tokens[i]?.value === '}' && tokens[i]?.type === 'closing_blockscope') {
+            scope.pop() // block statement khatam hoti hai to just scope se current scope pop krdo
+            i++
+        }
+        if (tokens[i]?.value === ']' && tokens[i]?.type === 'closing_squarly') {
+            scope.pop() // same for arrays
+            i++
+        }
+    }
+    return ast
+}
+
+const generatedTokens = tokenize(code)
+console.log(generatedTokens)
+
+let ast1 = generateAst(generatedTokens)
+console.log(ast1.body[0].body)
+
+console.log('\n\n\n')
+console.log('Input')
+console.log(code)
+console.log('\n')
+console.log('Output')
+console.log(generate.default(ast1).code)
+console.log('\n\n\n')
 
 //fun print(name,date){
 //     a = 'Hello world'
