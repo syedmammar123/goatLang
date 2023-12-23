@@ -1,6 +1,7 @@
 import generate from "@babel/generator";
 import fs from "fs";
 import {
+  AssignmentExpression,
   BinaryExpression,
   IfStatement,
   ArrayExpression,
@@ -12,11 +13,16 @@ import {
   StringLiteral,
   NumericLiteral,
   Identifier,
+  ExpressionStatement,
 } from "./Classes.js";
 import { tokenize } from "./tokenize.js";
 import { parseLogicalExpression } from "./BinaryExpressionParsing.js";
+import { getNode } from "../helpers/getNode.js";
+import exp from "constants";
+import { keywords } from "../environment/environment.js";
 
 const code = fs.readFileSync("./code", { encoding: "utf8" });
+
 function parseVariables(tokens, i, scope) {
   let declarator1 = new VariableDeclarator();
   let id1 = new Identifier(tokens[i].value);
@@ -38,8 +44,6 @@ function parseVariables(tokens, i, scope) {
   declarator1.setInit(init);
   return [declarator1, i];
 }
-
-
 
 function parseFunction(tokens, i, destScope, scope) {
   const fun = new FunctionDeclaration();
@@ -73,32 +77,30 @@ function parseFunction(tokens, i, destScope, scope) {
   return i;
 }
 
-function getCurrentIf (parentIf){
-    if (!parentIf?.alternate){
-        return parentIf 
-    }
+function getCurrentIf(parentIf) {
+  if (!parentIf?.alternate) {
+    return parentIf;
+  }
 
-    return getCurrentIf(parentIf.alternate)
+  return getCurrentIf(parentIf.alternate);
 }
 
-function parseIfStatements(tokens, i, currScope, scope , elf, isElse, ast) {
-    if (isElse){
-        i++
+function parseIfStatements(tokens, i, currScope, scope, elf, isElse, ast) {
+  if (isElse) {
+    i++;
     let blockStatement = new BlockStatement();
-        let currIf  = getCurrentIf(currScope.body[currScope.body.length -1 ])
-        currIf.setAlternate(blockStatement)
-        scope.push(currIf.alternate);
-        return i
-
-    }
+    let currIf = getCurrentIf(currScope.body[currScope.body.length - 1]);
+    currIf.setAlternate(blockStatement);
+    scope.push(currIf.alternate);
+    return i;
+  }
   let ifStat = new IfStatement();
-    if (elf){
-        let currIf  = getCurrentIf(currScope.body[currScope.body.length -1 ])
-        currIf.setAlternate(ifStat)
-    }
-    else{
-        currScope.push(ifStat); // ye wo scope hai jahan if declare hoga
-    }
+  if (elf) {
+    let currIf = getCurrentIf(currScope.body[currScope.body.length - 1]);
+    currIf.setAlternate(ifStat);
+  } else {
+    currScope.push(ifStat); // ye wo scope hai jahan if declare hoga
+  }
   i++;
   if (tokens[i]?.value !== "(") {
     throw new Error("Expected (");
@@ -123,7 +125,7 @@ function parseIfStatements(tokens, i, currScope, scope , elf, isElse, ast) {
 export const generateAst = (tokens) => {
   let i = 0;
   let ast = new Program();
-  let letVariables = [];
+  let variables = [];
   let scope = [ast];
   while (i < tokens.length) {
     if (tokens[i].value === "[") {
@@ -156,11 +158,51 @@ export const generateAst = (tokens) => {
       scope[scope.length - 1].push(temp);
       i++;
     }
+
     if (
-      tokens[i].value === "global" ||
-      tokens[i].value === "const" ||
-      (tokens[i].type === "identifier" &&
-        !letVariables.includes(tokens[i].value) && // its not already declared
+      tokens[i].type === "identifier" &&
+      variables.includes(tokens[i].value)
+    ) {
+      const expressionExp = new ExpressionStatement();
+      const assignmentExp = new AssignmentExpression();
+      expressionExp.setExpression(assignmentExp);
+      assignmentExp.setLeft(getNode(tokens[i]));
+      scope[scope.length - 1].push(expressionExp);
+      i++;
+      if (tokens[i]?.value !== "=") {
+        throw new Error("= exprected.");
+      }
+      i++;
+      let expTokens = [];
+      while (true) {
+        if (
+          ((expTokens[expTokens.length - 1]?.type === "identifier" ||
+            expTokens[expTokens.length - 1]?.type === "string" ||
+            expTokens[expTokens.length - 1]?.type === "Number") &&
+            (tokens[i]?.type === "identifier" ||
+              tokens[i]?.type === "string" ||
+              tokens[i]?.type === "Number" ||
+              keywords?.includes(tokens[i]?.value))) ||
+          tokens.length <= i
+        ) {
+          break;
+        }
+        expTokens.push(tokens[i]);
+        i++;
+      }
+
+      if (expTokens.length === 1) {
+        assignmentExp.setRight(getNode(expTokens[0]));
+      } else {
+        assignmentExp.setRight(parseLogicalExpression(expTokens));
+      }
+    }
+
+    if (
+      tokens[i]?.value === "global" ||
+      tokens[i]?.value === "const" ||
+      (tokens[i]?.type === "identifier" &&
+        !variables.includes(tokens[i].value) && // its not already declared
         !(scope[scope.length - 1] instanceof ArrayExpression)) // checking that current scope array to ni bcs array me initialization nai hoskti
     ) {
       let targetScope = scope[scope.length - 1];
@@ -173,11 +215,11 @@ export const generateAst = (tokens) => {
         var1.setType("const");
         i++;
       } else if (tokens[i].type === "identifier") {
-        letVariables.push(tokens[i].value);
         var1.setType("let");
       }
       const [declarator, j] = parseVariables(tokens, i, scope); // ye function keyword k baad ki value evaluate krke variable declarator return krta hai
       i = j;
+      variables.push(declarator.id.name);
       var1.pushDeclarators(declarator);
       if (
         targetScope instanceof Program &&
@@ -195,15 +237,39 @@ export const generateAst = (tokens) => {
       i++;
     }
     if (tokens[i]?.type === "keyword" && tokens[i]?.value === "if") {
-      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false, false, ast);
+      i = parseIfStatements(
+        tokens,
+        i,
+        scope[scope.length - 1],
+        scope,
+        false,
+        false,
+        ast,
+      );
       i++;
     }
     if (tokens[i]?.type === "keyword" && tokens[i]?.value === "elf") {
-      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, true , false, ast);
+      i = parseIfStatements(
+        tokens,
+        i,
+        scope[scope.length - 1],
+        scope,
+        true,
+        false,
+        ast,
+      );
       i++;
     }
     if (tokens[i]?.type === "keyword" && tokens[i]?.value === "else") {
-      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false , true, ast);
+      i = parseIfStatements(
+        tokens,
+        i,
+        scope[scope.length - 1],
+        scope,
+        false,
+        true,
+        ast,
+      );
       i++;
     }
     if (tokens[i]?.value === "}" && tokens[i]?.type === "closing_blockscope") {
@@ -217,7 +283,6 @@ export const generateAst = (tokens) => {
   }
   return ast;
 };
-
 
 const generatedTokens = tokenize(code);
 console.log(generatedTokens);

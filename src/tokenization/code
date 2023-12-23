@@ -1,0 +1,12 @@
+a = 4
+b = 3
+
+temp = 0
+
+temp = a 
+a = b
+b = a
+temp = 0
+
+temp = a && b
+

@@ -1,7 +1,4 @@
-import {
-  BinaryExpression,
-  LogicalExpression,
-} from "./Classes.js";
+import { BinaryExpression, LogicalExpression } from "./Classes.js";
 import { parse } from "@babel/parser";
 import generate, { CodeGenerator } from "@babel/generator";
 import { getNode } from "../helpers/getNode.js";

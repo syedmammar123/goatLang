@@ -162,41 +162,55 @@ export class LogicalExpression {
   }
 }
 
-
-export class ExpressionStatement{
-    constructor(){
-        this.type="ExpressionStatement";
-        this.expression = null;
-    }
-    setExpression(exp){
-        this.expression = exp;
-    }
+export class ExpressionStatement {
+  constructor() {
+    this.type = "ExpressionStatement";
+    this.expression = null;
+  }
+  setExpression(exp) {
+    this.expression = exp;
+  }
 }
 
-export class CallExpression{
-    constructor(){
-        this.type="CallExpression";
-        this.callee=null;
-        this.arguments=[];
-    }
-    setCallee(callee){
-        this.callee = callee;
-    }
-    pushArg(smth){
-        this.arguments.push(smth)
-    }
+export class CallExpression {
+  constructor() {
+    this.type = "CallExpression";
+    this.callee = null;
+    this.arguments = [];
+  }
+  setCallee(callee) {
+    this.callee = callee;
+  }
+  pushArg(smth) {
+    this.arguments.push(smth);
+  }
 }
 
-export class MemberExpression{
-    constructor(){
-        this.type="MemberExpression";
-        this.object;
-        this.property;
-    }
-    setObj(obj){
-        this.object = obj
-    }
-    setProperty(prop){
-        this.property = prop
-    }
+export class MemberExpression {
+  constructor() {
+    this.type = "MemberExpression";
+    this.object;
+    this.property;
+  }
+  setObj(obj) {
+    this.object = obj;
+  }
+  setProperty(prop) {
+    this.property = prop;
+  }
+}
+
+export class AssignmentExpression {
+  constructor() {
+    this.type = "AssignmentExpression";
+    this.operator = "=";
+    this.right = null;
+    this.left = null;
+  }
+  setRight(smth) {
+    this.right = smth;
+  }
+  setLeft(smth) {
+    this.left = smth;
+  }
 }
