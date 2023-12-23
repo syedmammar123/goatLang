@@ -73,9 +73,32 @@ function parseFunction(tokens, i, destScope, scope) {
   return i;
 }
 
-function parseIfStatements(tokens, i, currScope, scope) {
+function getCurrentIf (parentIf){
+    if (!parentIf?.alternate){
+        return parentIf 
+    }
+
+    return getCurrentIf(parentIf.alternate)
+}
+
+function parseIfStatements(tokens, i, currScope, scope , elf, isElse, ast) {
+    if (isElse){
+        i++
+    let blockStatement = new BlockStatement();
+        let currIf  = getCurrentIf(currScope.body[currScope.body.length -1 ])
+        currIf.setAlternate(blockStatement)
+        scope.push(currIf.alternate);
+        return i
+
+    }
   let ifStat = new IfStatement();
-  currScope.push(ifStat); // ye wo scope hai jahan if declare hoga
+    if (elf){
+        let currIf  = getCurrentIf(currScope.body[currScope.body.length -1 ])
+        currIf.setAlternate(ifStat)
+    }
+    else{
+        currScope.push(ifStat); // ye wo scope hai jahan if declare hoga
+    }
   i++;
   if (tokens[i]?.value !== "(") {
     throw new Error("Expected (");
@@ -88,12 +111,12 @@ function parseIfStatements(tokens, i, currScope, scope) {
   }
   testTokens.pop();
   ifStat.setTest(parseLogicalExpression(testTokens));
+
   if (tokens[i].type === "openening_blockscope" && tokens[i].value === "{") {
     let blockStatement = new BlockStatement();
     ifStat.setConsequent(blockStatement);
     scope.push(ifStat.consequent); // ye is if ka apna scope hai
   }
-
   return i;
 }
 
@@ -172,7 +195,15 @@ export const generateAst = (tokens) => {
       i++;
     }
     if (tokens[i]?.type === "keyword" && tokens[i]?.value === "if") {
-      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope);
+      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false, false, ast);
+      i++;
+    }
+    if (tokens[i]?.type === "keyword" && tokens[i]?.value === "elf") {
+      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, true , false, ast);
+      i++;
+    }
+    if (tokens[i]?.type === "keyword" && tokens[i]?.value === "else") {
+      i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false , true, ast);
       i++;
     }
     if (tokens[i]?.value === "}" && tokens[i]?.type === "closing_blockscope") {
@@ -187,20 +218,12 @@ export const generateAst = (tokens) => {
   return ast;
 };
 
-let ast2 = {
-  type: "CallExpression",
-  name: "add",
-  arguments: [
-    { type: "NumericLiteral", value: 2 },
-    { type: "NumericLiteral", value: 3 },
-  ],
-  callee: { type: "Identifier", name: "add" },
-};
 
 const generatedTokens = tokenize(code);
 console.log(generatedTokens);
 
 let ast1 = generateAst(generatedTokens);
+console.log(ast1.body);
 
 console.log("\n\n\n");
 console.log("Input");

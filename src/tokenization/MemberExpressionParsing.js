@@ -1,4 +1,5 @@
 import { MemberExpression, CallExpression, ExpressionStatement } from "./Classes.js";
+import generate from "@babel/generator";
 import { getNode } from "../helpers/getNode.js";
 
 
@@ -7,7 +8,6 @@ const tokens = [
   { type: 'dot_operator', value: '.' },
   { type: 'identifier', value: 'length' },
   { type: 'openeing_parenthesis', value: '(' },
-  { type: 'identifier', value: 'name' },
   { type: 'closing_parenthesis', value: ')' },
   { type: 'dot_operator', value: '.' },
   { type: 'identifier', value: 'sum' }
@@ -63,7 +63,7 @@ function parseMemberExpression(tokens , i ){
             }
             if (tokens[i]?.value === "."){
                 let memberExp = new MemberExpression()
-                memberExp.setObj(currExp?.expression ? currExp?.expression : tempToken)
+                memberExp.setObj(currExp?.expression ? currExp?.expression :  getNode(tempToken))
                 i++
                 memberExp.setProperty(getNode(tokens[i]))
                 currExp.setExpression(memberExp)
@@ -77,3 +77,4 @@ function parseMemberExpression(tokens , i ){
 
 const ast = parseMemberExpression(tokens, 0)
 console.log(ast)
+console.log(generate.default(ast).code);

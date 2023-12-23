@@ -14,6 +14,24 @@ fun print(name,date){
      }
 }
 
+
 if ((k < j && i === l) && i == u || t < p && w===o){
+}
+if (2){
+    if (6){
+
+    }elf (69){
+
+    }else{
+
+    }
+}
+elf(0){
+
+}
+else{
+
+}
+fun print(name){
 
 }
