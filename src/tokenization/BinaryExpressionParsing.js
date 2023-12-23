@@ -2,7 +2,7 @@ import { BinaryExpression, LogicalExpression } from './Classes.js'
 import { parse } from '@babel/parser'
 import generate, { CodeGenerator } from '@babel/generator'
 import { getNode } from '../helpers/getNode.js'
-import {parseMemberExpression} from './MemberExpressionParsing.js'
+import { parseMemberExpression } from './MemberExpressionParsing.js'
 
 //const tokens =
 //
@@ -43,28 +43,34 @@ import {parseMemberExpression} from './MemberExpressionParsing.js'
 
 //99 + (num - 3) - (1 / (9 * 87)) ** 72
 
-function isItExpressionStatement(tokens){
-            let isExpLogical = false
-            tokens.forEach((token) => {
-                if (
-                    token.value === '||' ||
-                    token.value === '&&' ||
-                    token.value === '==' ||
-                    token.value === '===' ||
-                    token.value === '!'
-                ) {
-                    isExpLogical = true
-                }
-            })
+function isItExpressionStatement(tokens) {
+    let isExpLogical = false
+    tokens.forEach((token) => {
+        if (
+            token.value === '||' ||
+            token.value === '&&' ||
+            token.value === '==' ||
+            token.value === '===' ||
+            token.value === '!' ||
+            token.value === '+' ||
+            token.value === '-' ||
+            token.value === '/' ||
+            token.value === '*' ||
+            token.value === '%'
+        ) {
+            isExpLogical = true
+        }
+    })
     return isExpLogical
 }
 
 export function parseLogicalExpression(tokens) {
-    if (!(isItExpressionStatement(tokens))) {
-        if (tokens.length === 1){
+    if (!isItExpressionStatement(tokens)) {
+        if (tokens.length === 1) {
+            console.log(tokens)
             return getNode(tokens.pop())
-        }else{
-            console.log(tokens,"turrrrr")
+        } else {
+            console.log(tokens, 'turrrrr')
             return parseMemberExpression(tokens, 0)
         }
     }
@@ -88,7 +94,7 @@ export function parseLogicalExpression(tokens) {
         if (tokens[i].value === '(') {
             paramCount--
         }
-        if ((tokens[i].value === '&&' || tokens[i].value === '||' || tokens[i].value === "===") && paramCount <= 0) {
+        if ((tokens[i].value === '&&' || tokens[i].value === '||' || tokens[i].value === '===') && paramCount <= 0) {
             if (!idx) {
                 idx = i
             } else if (tokens[idx].value === '&&' && tokens[i].value === '||') {
@@ -134,7 +140,7 @@ export function parseLogicalExpression(tokens) {
         exp.setOperator(tokens?.pop()?.value)
         exp.setLeft(parseLogicalExpression(tokens))
     }
-console.log(exp.right)
+    console.log(exp.right)
     return exp
 }
 

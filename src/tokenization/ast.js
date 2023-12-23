@@ -212,7 +212,13 @@ export const generateAst = (tokens) => {
                     token.value === '&&' ||
                     token.value === '==' ||
                     token.value === '===' ||
-                    token.value === '!'
+                    token.value === '!' ||
+                    token.value === '!' ||
+                    token.value === '+' ||
+                    token.value === '-' ||
+                    token.value === '/' ||
+                    token.value === '*' ||
+                    token.value === '%'
                 ) {
                     isExpLogical = true
                 }
