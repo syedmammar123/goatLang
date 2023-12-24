@@ -33,7 +33,6 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 //]
 // (k < j && i === l )
 
-
 //const tokens = [
 //    {type: "Number" , value : "99"},
 //    {type: "operator" , value : "+"},
@@ -113,7 +112,10 @@ export function parseLogicalExpression(tokens) {
         if ((tokens[i].value === '&&' || tokens[i].value === '||' || tokens[i].value === '===') && paramCount <= 0) {
             if (!idx) {
                 idx = i
-            } else if (tokens[idx].value === '&&' && tokens[i].value === '||' || ((tokens[i].value === "&&" || tokens[i].value === "||") && (tokens[idx].value ==="==="))) {
+            } else if (
+                (tokens[idx].value === '&&' && tokens[i].value === '||') ||
+                ((tokens[i].value === '&&' || tokens[i].value === '||') && tokens[idx].value === '===')
+            ) {
                 idx = i
             }
         }

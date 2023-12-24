@@ -27,7 +27,6 @@ export function tokenize(code) {
             })
             char = ''
         } else if (code[i] !== '=' && char !== '' && !keywords.includes(char)) {
-            console.log(char, 'char')
             tokens.push({
                 type: 'identifier',
                 value: char,

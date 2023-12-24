@@ -45,9 +45,13 @@ function parseVariables(tokens, i, scope) {
     return [declarator1, i]
 }
 
-function parseFunction(tokens, i, destScope, scope) {
+function parseFunction(tokens, i, destScope, scope, isAssigned, setter) {
     const fun = new FunctionDeclaration()
-    destScope.push(fun) // ye wo scope hai jahan function declare hoga
+    if (isAssigned) {
+        destScope[setter](fun)
+    } else {
+        destScope.push(fun) // ye wo scope hai jahan function declare hoga
+    }
     i++
     const id = new Identifier(tokens[i].value)
     fun.setId(id)
@@ -122,6 +126,52 @@ function parseIfStatements(tokens, i, currScope, scope, elf, isElse) {
     return i
 }
 
+function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
+    const assignmentExp = new AssignmentExpression()
+    parent[setter](assignmentExp)
+    assignmentExp.setLeft(getNode(tokens[i]))
+    i++
+    if (tokens[i]?.value !== '=') {
+        throw new Error('= exprected.')
+    }
+    i++
+    if (tokens[i].value === '[') {
+        // agr assigned value array ho to
+        let arr = new ArrayExpression()
+        assignmentExp.setRight(arr) // array ko current scope me add kia
+        scope.push(arr) // array ko current scope bnaya so that next sare elements ushi array me add hon
+        i++
+    } else if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
+        i = parseFunction(tokens, i, assignmentExp, scope, true, 'setRight')
+        i++
+    } else {
+        let expTokens = []
+        while (true) {
+            if (
+                ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+                    expTokens[expTokens.length - 1]?.type === 'string' ||
+                    expTokens[expTokens.length - 1]?.type === 'Number') &&
+                    (tokens[i]?.type === 'identifier' ||
+                        tokens[i]?.type === 'string' ||
+                        tokens[i]?.type === 'Number' ||
+                        keywords?.includes(tokens[i]?.value))) ||
+                tokens.length <= i
+            ) {
+                break
+            }
+            expTokens.push(tokens[i])
+            i++
+        }
+        if (expTokens.length === 1) {
+            assignmentExp.setRight(getNode(expTokens[0]))
+        } else {
+            assignmentExp.setRight(parseLogicalExpression(expTokens))
+        }
+    }
+
+    return i
+}
+
 export const generateAst = (tokens) => {
     let i = 0
     let ast = new Program()
@@ -141,6 +191,14 @@ export const generateAst = (tokens) => {
             scope[scope.length - 1] instanceof ArrayExpression // comma ( seperator ) ko array me ignore krengy
         ) {
             i++
+        }
+        if (
+            (tokens[i].type === 'identifier' ||
+                (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
+            !variables.includes(tokens[i].value) &&
+            scope[scope.length - 1] instanceof ArrayExpression
+        ) {
+            throw new Error(`${tokens[i].value} is not declared`)
         }
 
         if (
@@ -179,61 +237,8 @@ export const generateAst = (tokens) => {
         if (tokens[i]?.type === 'identifier' && variables.includes(tokens[i]?.value) && tokens[i + 1]?.value === '=') {
             // assignment expression k lie
             const expressionExp = new ExpressionStatement()
-            const assignmentExp = new AssignmentExpression()
-            expressionExp.setExpression(assignmentExp)
-            assignmentExp.setLeft(getNode(tokens[i]))
             scope[scope.length - 1].push(expressionExp)
-            i++
-            if (tokens[i]?.value !== '=') {
-                throw new Error('= exprected.')
-            }
-            i++
-            let expTokens = []
-            while (true) {
-                if (
-                    ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
-                        expTokens[expTokens.length - 1]?.type === 'string' ||
-                        expTokens[expTokens.length - 1]?.type === 'Number') &&
-                        (tokens[i]?.type === 'identifier' ||
-                            tokens[i]?.type === 'string' ||
-                            tokens[i]?.type === 'Number' ||
-                            keywords?.includes(tokens[i]?.value))) ||
-                    tokens.length <= i
-                ) {
-                    break
-                }
-                expTokens.push(tokens[i])
-                i++
-            }
-//            let isExpLogical = false
-//            expTokens.forEach((token) => {
-//                if (
-//                    token.value === '||' ||
-//                    token.value === '&&' ||
-//                    token.value === '==' ||
-//                    token.value === '===' ||
-//                    token.value === '!' ||
-//                    token.value === '!' ||
-//                    token.value === '+' ||
-//                    token.value === '-' ||
-//                    token.value === '/' ||
-//                    token.value === '*' ||
-//                    token.value === '%'
-//                ) {
-//                    isExpLogical = true
-//                }
-//            })
-            if (expTokens.length === 1) {
-                assignmentExp.setRight(getNode(expTokens[0]))
-            } else {
-//                if (isExpLogical) {
-//                    assignmentExp.setRight(parseLogicalExpression(expTokens))
-//                } else {
-//                    console.log("rannnn")
-                    assignmentExp.setRight(parseLogicalExpression(expTokens))
-//                    assignmentExp.setRight(parseMemberExpression(expTokens, 0))
-//                }
-            }
+            i = parseAssignmentExpressions(tokens, i, scope, 'setExpression', expressionExp)
         }
 
         if (
@@ -290,7 +295,8 @@ export const generateAst = (tokens) => {
             const returnStat = new ReturnStatement()
             scope[scope.length - 1].push(returnStat)
             i++
-            if (tokens[i].value === '}') { // void statements
+            if (tokens[i].value === '}') {
+                // void statements
                 returnStat.setArgument(null)
             }
             if (
@@ -300,39 +306,11 @@ export const generateAst = (tokens) => {
             ) {
                 throw new Error('Can not declare variable in return Statement! ')
             }
-            // For assignment expression 
+            // For assignment expression in return statements
             if (tokens[i].type === 'identifier' && variables.includes(tokens[i].value) && tokens[i + 1].value === '=') {
-                const assignmentExp = new AssignmentExpression()
-                assignmentExp.setLeft(getNode(tokens[i]))
-                returnStat.setArgument(assignmentExp)
-                i++
-                i++
-                let expTokens = []
-                while (true) {
-                    if (
-                        ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
-                            expTokens[expTokens.length - 1]?.type === 'string' ||
-                            expTokens[expTokens.length - 1]?.type === 'Number') &&
-                            (tokens[i]?.type === 'identifier' ||
-                                tokens[i]?.type === 'string' ||
-                                tokens[i]?.type === 'Number' ||
-                                keywords?.includes(tokens[i]?.value))) ||
-                        tokens.length <= i ||
-                        tokens[i].value === '}'
-                    ) {
-                        break
-                    }
-                    expTokens.push(tokens[i])
-                    i++
-                }
-
-                if (expTokens.length === 1) {
-                    assignmentExp.setRight(getNode(expTokens[0]))
-                } else {
-                    assignmentExp.setRight(parseLogicalExpression(expTokens))
-                }
+                i = parseAssignmentExpressions(tokens, i, scope, 'setArgument', returnStat)
             }
-            // for expression statements
+            // for expression statements in return statements
             if (tokens[i].type === 'Number' || tokens[i].type === 'string' || tokens[i].type === 'identifier') {
                 let expTokens = []
                 while (true) {
@@ -359,6 +337,11 @@ export const generateAst = (tokens) => {
                     returnStat.setArgument(parseLogicalExpression(expTokens))
                 }
             }
+            if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
+                console.log('invoked', tokens[i])
+                i = parseFunction(tokens, i, returnStat, scope, true, 'setArgument')
+                i++
+            }
             if (tokens[i].value === '[') {
                 // agr nested array ho to ...
                 let arr = new ArrayExpression()
@@ -383,7 +366,7 @@ const generatedTokens = tokenize(code)
 console.log(generatedTokens)
 
 let ast1 = generateAst(generatedTokens)
-console.log(ast1.body[0].body)
+//console.log(ast1.body[1].expression.right.body.body)
 
 console.log('\n\n\n')
 console.log('Input')

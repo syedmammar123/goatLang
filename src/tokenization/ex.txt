@@ -75,3 +75,47 @@ discarded code
 //            scope[scope.length - 1].push(temp)
 //            i++
 //        }
+
+
+//                const assignmentExp = new AssignmentExpression()
+//                assignmentExp.setLeft(getNode(tokens[i]))
+//                returnStat.setArgument(assignmentExp)
+//                i++
+//                i++
+//                let expTokens = []
+//                while (true) {
+//                    if (
+//                        ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+//                            expTokens[expTokens.length - 1]?.type === 'string' ||
+//                            expTokens[expTokens.length - 1]?.type === 'Number') &&
+//                            (tokens[i]?.type === 'identifier' ||
+//                                tokens[i]?.type === 'string' ||
+//                                tokens[i]?.type === 'Number' ||
+//                                keywords?.includes(tokens[i]?.value))) ||
+//                        tokens.length <= i ||
+//                        tokens[i].value === '}'
+//                    ) {
+//                        break
+//                    }
+//                    expTokens.push(tokens[i])
+//                    i++
+//                }
+//
+//                if (expTokens.length === 1) {
+//                    assignmentExp.setRight(getNode(expTokens[0]))
+//                } else {
+//                    assignmentExp.setRight(parseLogicalExpression(expTokens))
+//                }
+
+
+
+fun print(name){
+const a = 'hello world'
+b = 0
+b = 10 + 3
+
+return a.length === b.length
+}
+c = 0
+c = arr.length.max.get.got.git === 'lol'.length.sum
+

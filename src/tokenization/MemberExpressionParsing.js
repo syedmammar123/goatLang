@@ -38,11 +38,14 @@ function parseArguments(tokens, i) {
 }
 
 export function parseMemberExpression(tokens, i) {
-    if (tokens[i].type !== 'identifier' && tokens[i].type !== "string" && tokens[i].type !== "Number") {
+    if (tokens[i].type !== 'identifier' && tokens[i].type !== 'string' && tokens[i].type !== 'Number') {
         return
     }
     let currExp = new ExpressionStatement()
-    let tempToken = tokens[i]?.type === 'identifier' || tokens[i].type === 'string' || tokens[i].type === "Number" ? tokens[i] : null
+    let tempToken =
+        tokens[i]?.type === 'identifier' || tokens[i].type === 'string' || tokens[i].type === 'Number'
+            ? tokens[i]
+            : null
     while (i < tokens.length) {
         if (tokens[i].value === '(') {
             let callExp = new CallExpression()
