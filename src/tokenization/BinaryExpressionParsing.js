@@ -3,9 +3,23 @@ import { parse } from '@babel/parser'
 import generate, { CodeGenerator } from '@babel/generator'
 import { getNode } from '../helpers/getNode.js'
 import { parseMemberExpression } from './MemberExpressionParsing.js'
+//
+//const tokens = [
+//  { type: 'identifier', value: 'arr' },
+//  { type: 'dot_operator', value: '.' },
+//  { type: 'identifier', value: 'length' },
+//  { type: 'dot_operator', value: '.' },
+//  { type: 'identifier', value: 'max' },
+//  { type: 'dot_operator', value: '.' },
+//  { type: 'identifier', value: 'get' },
+//  { type: 'dot_operator', value: '.' },
+//  { type: 'identifier', value: 'got' },
+//  { type: 'dot_operator', value: '.' },
+//  { type: 'identifier', value: 'git' }
+//]
+//
 
 //const tokens =
-//
 //[
 //  { type: 'openeing_parenthesis', value: '(' },
 //  { type: 'identifier', value: 'k' },
@@ -17,7 +31,8 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 //  { type: 'identifier', value: 'l' },
 //  { type: 'closing_parenthesis', value: ')' }
 //]
-//
+// (k < j && i === l )
+
 
 //const tokens = [
 //    {type: "Number" , value : "99"},
@@ -44,7 +59,7 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 //99 + (num - 3) - (1 / (9 * 87)) ** 72
 
 function isItExpressionStatement(tokens) {
-    let isExpLogical = false
+    let isExpLogicalOrBinary = false
     tokens.forEach((token) => {
         if (
             token.value === '||' ||
@@ -56,21 +71,22 @@ function isItExpressionStatement(tokens) {
             token.value === '-' ||
             token.value === '/' ||
             token.value === '*' ||
-            token.value === '%'
+            token.value === '%' ||
+            token.value === '>' ||
+            token.value === '<'
         ) {
-            isExpLogical = true
+            isExpLogicalOrBinary = true
         }
     })
-    return isExpLogical
+    return isExpLogicalOrBinary
 }
 
 export function parseLogicalExpression(tokens) {
+    console.log(tokens)
     if (!isItExpressionStatement(tokens)) {
         if (tokens.length === 1) {
-            console.log(tokens)
             return getNode(tokens.pop())
         } else {
-            console.log(tokens, 'turrrrr')
             return parseMemberExpression(tokens, 0)
         }
     }
@@ -97,7 +113,7 @@ export function parseLogicalExpression(tokens) {
         if ((tokens[i].value === '&&' || tokens[i].value === '||' || tokens[i].value === '===') && paramCount <= 0) {
             if (!idx) {
                 idx = i
-            } else if (tokens[idx].value === '&&' && tokens[i].value === '||') {
+            } else if (tokens[idx].value === '&&' && tokens[i].value === '||' || ((tokens[i].value === "&&" || tokens[i].value === "||") && (tokens[idx].value ==="==="))) {
                 idx = i
             }
         }
@@ -146,3 +162,4 @@ export function parseLogicalExpression(tokens) {
 
 //let ast  = parseLogicalExpression(tokens)
 //console.log(ast)
+//console.log(generate.default(ast).code)

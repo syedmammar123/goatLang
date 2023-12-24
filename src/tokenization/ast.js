@@ -144,7 +144,7 @@ export const generateAst = (tokens) => {
         }
 
         if (
-            ((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) ||
+            ((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) || // array values ya ksi non declarative ya non assignment statements k lie
                 tokens[i].type === 'Number' ||
                 tokens[i].type === 'string') &&
             tokens[i + 1].value !== '='
@@ -205,32 +205,34 @@ export const generateAst = (tokens) => {
                 expTokens.push(tokens[i])
                 i++
             }
-            let isExpLogical = false
-            expTokens.forEach((token) => {
-                if (
-                    token.value === '||' ||
-                    token.value === '&&' ||
-                    token.value === '==' ||
-                    token.value === '===' ||
-                    token.value === '!' ||
-                    token.value === '!' ||
-                    token.value === '+' ||
-                    token.value === '-' ||
-                    token.value === '/' ||
-                    token.value === '*' ||
-                    token.value === '%'
-                ) {
-                    isExpLogical = true
-                }
-            })
+//            let isExpLogical = false
+//            expTokens.forEach((token) => {
+//                if (
+//                    token.value === '||' ||
+//                    token.value === '&&' ||
+//                    token.value === '==' ||
+//                    token.value === '===' ||
+//                    token.value === '!' ||
+//                    token.value === '!' ||
+//                    token.value === '+' ||
+//                    token.value === '-' ||
+//                    token.value === '/' ||
+//                    token.value === '*' ||
+//                    token.value === '%'
+//                ) {
+//                    isExpLogical = true
+//                }
+//            })
             if (expTokens.length === 1) {
                 assignmentExp.setRight(getNode(expTokens[0]))
             } else {
-                if (isExpLogical) {
+//                if (isExpLogical) {
+//                    assignmentExp.setRight(parseLogicalExpression(expTokens))
+//                } else {
+//                    console.log("rannnn")
                     assignmentExp.setRight(parseLogicalExpression(expTokens))
-                } else {
-                    assignmentExp.setRight(parseMemberExpression(expTokens, 0))
-                }
+//                    assignmentExp.setRight(parseMemberExpression(expTokens, 0))
+//                }
             }
         }
 
@@ -288,7 +290,7 @@ export const generateAst = (tokens) => {
             const returnStat = new ReturnStatement()
             scope[scope.length - 1].push(returnStat)
             i++
-            if (tokens[i].value === '}') {
+            if (tokens[i].value === '}') { // void statements
                 returnStat.setArgument(null)
             }
             if (
@@ -298,7 +300,7 @@ export const generateAst = (tokens) => {
             ) {
                 throw new Error('Can not declare variable in return Statement! ')
             }
-            // expression stat start
+            // For assignment expression 
             if (tokens[i].type === 'identifier' && variables.includes(tokens[i].value) && tokens[i + 1].value === '=') {
                 const assignmentExp = new AssignmentExpression()
                 assignmentExp.setLeft(getNode(tokens[i]))
@@ -330,7 +332,7 @@ export const generateAst = (tokens) => {
                     assignmentExp.setRight(parseLogicalExpression(expTokens))
                 }
             }
-
+            // for expression statements
             if (tokens[i].type === 'Number' || tokens[i].type === 'string' || tokens[i].type === 'identifier') {
                 let expTokens = []
                 while (true) {

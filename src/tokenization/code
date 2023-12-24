@@ -3,7 +3,11 @@ const a = 'hello world'
 b = 0
 b = 10 + 3
 
-return [a,b,10 + 9]
+return a.length === b.length
 }
 c = 0
-c = arr.length.max
+c = arr.length.max.get.got.git === 'lol'.length.sum
+
+arr = 0
+
+arr = c + 3 + ( 3 + 7) + 78 

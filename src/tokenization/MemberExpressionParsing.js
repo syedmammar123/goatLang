@@ -2,14 +2,14 @@ import { MemberExpression, CallExpression, ExpressionStatement } from './Classes
 import generate from '@babel/generator'
 import { getNode } from '../helpers/getNode.js'
 //
-//const tokens = [
-//    { type: 'identifier', value: 'arr' },
-//    { type: 'dot_operator', value: '.' },
-//    { type: 'identifier', value: 'length' },
-//    { type: 'openeing_parenthesis', value: '(' },
-//    { type: 'closing_parenthesis', value: ')' },
-//]
-//
+const tokens = [
+    { type: 'string', value: 'arr' },
+    { type: 'dot_operator', value: '.' },
+    { type: 'identifier', value: 'length' },
+    { type: 'openeing_parenthesis', value: '(' },
+    { type: 'closing_parenthesis', value: ')' },
+]
+
 //const tokens = [
 //  { type: 'identifier', value: 'print' },
 //  { type: 'openeing_parenthesis', value: '(' },
@@ -38,11 +38,11 @@ function parseArguments(tokens, i) {
 }
 
 export function parseMemberExpression(tokens, i) {
-    if (tokens[i].type !== 'identifier') {
+    if (tokens[i].type !== 'identifier' && tokens[i].type !== "string" && tokens[i].type !== "Number") {
         return
     }
     let currExp = new ExpressionStatement()
-    let tempToken = tokens[i]?.type === 'identifier' ? tokens[i] : null
+    let tempToken = tokens[i]?.type === 'identifier' || tokens[i].type === 'string' || tokens[i].type === "Number" ? tokens[i] : null
     while (i < tokens.length) {
         if (tokens[i].value === '(') {
             let callExp = new CallExpression()
