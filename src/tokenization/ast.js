@@ -36,12 +36,44 @@ function parseVariables(tokens, i, scope) {
     if (tokens[i].value === '[') {
         init = new ArrayExpression()
         scope.push(init)
-    } else if (tokens[i]?.type === 'string') {
-        init = new StringLiteral(tokens[i].value)
-    } else if (tokens[i]?.type === 'Number') {
-        init = new NumericLiteral(tokens[i].value)
+        declarator1.setInit(init)
     }
-    declarator1.setInit(init)
+    //    else if (tokens[i]?.type === 'string') {
+    //        init = new StringLiteral(tokens[i].value)
+    //    declarator1.setInit(init)
+    //    } else if (tokens[i]?.type === 'Number') {
+    //        init = new NumericLiteral(tokens[i].value)
+    //    declarator1.setInit(init)
+    //    }
+    else if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
+        i = parseFunction(tokens, i, declarator1, scope, true, 'setInit')
+        i++
+    } else {
+        let expTokens = []
+        while (true) {
+            if (
+                ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+                    expTokens[expTokens.length - 1]?.type === 'string' ||
+                    expTokens[expTokens.length - 1]?.type === 'Number') &&
+                    (tokens[i]?.type === 'identifier' ||
+                        tokens[i]?.type === 'string' ||
+                        tokens[i]?.type === 'Number' ||
+                        keywords?.includes(tokens[i]?.value))) ||
+                tokens.length <= i
+            ) {
+                break
+            }
+            expTokens.push(tokens[i])
+            i++
+        }
+        if (expTokens.length === 1) {
+            declarator1.setInit(getNode(expTokens[0]))
+        } else {
+            declarator1.setInit(parseLogicalExpression(expTokens))
+        }
+        i--
+    }
+
     return [declarator1, i]
 }
 
@@ -75,6 +107,7 @@ function parseFunction(tokens, i, destScope, scope, isAssigned, setter) {
     i++
     if (tokens[i].type === 'openening_blockscope' && tokens[i].value === '{') {
         let blockStatement = new BlockStatement()
+        blockStatement.params = fun.params.map((param) => param?.name ?? param.name)
         fun.setScope(blockStatement)
         scope.push(blockStatement) // ye is function ka apna scope hai
     }
@@ -202,10 +235,11 @@ export const generateAst = (tokens) => {
         }
 
         if (
-            ((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) || // array values ya ksi non declarative ya non assignment statements k lie
+            (((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) || // array values ya ksi non declarative ya non assignment statements k lie
                 tokens[i].type === 'Number' ||
                 tokens[i].type === 'string') &&
-            tokens[i + 1].value !== '='
+                tokens[i + 1].value !== '=') ||
+            tokens[i + 1].value === '('
         ) {
             let expTokens = []
             while (true) {
@@ -246,7 +280,8 @@ export const generateAst = (tokens) => {
             tokens[i]?.value === 'const' ||
             (tokens[i]?.type === 'identifier' &&
                 !variables.includes(tokens[i].value) && // its not already declared
-                !(scope[scope.length - 1] instanceof ArrayExpression)) // checking that current scope array to ni bcs array me initialization nai hoskti
+                !(scope[scope.length - 1] instanceof ArrayExpression) && // checking that current scope array to ni bcs array me initialization nai hoskti
+                !(tokens[i + 1].value === '('))
         ) {
             let targetScope = scope[scope.length - 1]
             let var1 = new VariableDeclaration()
@@ -299,13 +334,13 @@ export const generateAst = (tokens) => {
                 // void statements
                 returnStat.setArgument(null)
             }
-            if (
-                (tokens[i].type === 'identifier' ||
-                    (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
-                !variables.includes(tokens[i].value)
-            ) {
-                throw new Error('Can not declare variable in return Statement! ')
-            }
+            //            if (
+            //                (tokens[i].type === 'identifier' ||
+            //                    (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
+            //                (!variables.includes(tokens[i].value) && !scope[scope.length -1 ].params?.includes(tokens[i]?.value))
+            //            ) {
+            //                throw new Error('Can not declare variable in return Statement! ')
+            //            }
             // For assignment expression in return statements
             if (tokens[i].type === 'identifier' && variables.includes(tokens[i].value) && tokens[i + 1].value === '=') {
                 i = parseAssignmentExpressions(tokens, i, scope, 'setArgument', returnStat)
@@ -338,7 +373,6 @@ export const generateAst = (tokens) => {
                 }
             }
             if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
-                console.log('invoked', tokens[i])
                 i = parseFunction(tokens, i, returnStat, scope, true, 'setArgument')
                 i++
             }

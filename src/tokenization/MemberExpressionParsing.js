@@ -1,15 +1,16 @@
 import { MemberExpression, CallExpression, ExpressionStatement } from './Classes.js'
+import { parseLogicalExpression } from './BinaryExpressionParsing.js'
 import generate from '@babel/generator'
 import { getNode } from '../helpers/getNode.js'
 //
-const tokens = [
-    { type: 'string', value: 'arr' },
-    { type: 'dot_operator', value: '.' },
-    { type: 'identifier', value: 'length' },
-    { type: 'openeing_parenthesis', value: '(' },
-    { type: 'closing_parenthesis', value: ')' },
-]
-
+//const tokens = [
+//    { type: 'string', value: 'arr' },
+//    { type: 'dot_operator', value: '.' },
+//    { type: 'identifier', value: 'length' },
+//    { type: 'openeing_parenthesis', value: '(' },
+//    { type: 'closing_parenthesis', value: ')' },
+//]
+//
 //const tokens = [
 //  { type: 'identifier', value: 'print' },
 //  { type: 'openeing_parenthesis', value: '(' },
@@ -22,14 +23,20 @@ function parseArguments(tokens, i) {
     i++
     let args = []
     while (paranCount !== 0) {
-        if (tokens[i].type === 'identifier' || tokens[i].type === 'Number' || tokens[i].type === 'string') {
-            let node = getNode(tokens[i])
-            args.push(node)
-        } else if (tokens[i].value === ',') {
+        let tempTokens = []
+        while (tokens[i]?.value !== ',' && tokens[i]?.value !== ')') {
+            tempTokens.push(tokens[i])
             i++
-        } else if (tokens[i].value === '(') {
+        }
+        if (tokens[i]?.value === ',' || (tokens[i].value === ')' && tempTokens.length)) {
+            let node = parseLogicalExpression(tempTokens)
+            tempTokens = []
+            args.push(node)
+        }
+        if (tokens[i]?.value === '(') {
             paranCount++
-        } else if (tokens[i].value === ')') {
+        }
+        if (tokens[i]?.value === ')') {
             paranCount--
         }
         i++

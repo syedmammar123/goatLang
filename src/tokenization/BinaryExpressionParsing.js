@@ -3,21 +3,44 @@ import { parse } from '@babel/parser'
 import generate, { CodeGenerator } from '@babel/generator'
 import { getNode } from '../helpers/getNode.js'
 import { parseMemberExpression } from './MemberExpressionParsing.js'
+
+//const tokens = [
+//    { type: 'identifier', value: 'n' },
+//    { type: 'operator', value: '*' },
+//    { type: 'Number', value: 2 },
+//    { type: 'operator', value: '+' },
+//    { type: 'Number', value: 2 },
+//]
 //
+//const tokens = [
+//    { type: 'identifier', value: 'fibonacci' },
+//    { type: 'openeing_parenthesis', value: '(' },
+//    { type: 'identifier', value: 'n' },
+//    { type: 'operator', value: '+' },
+//    { type: 'Number', value: 1 },
+//    { type: 'closing_parenthesis', value: ')' },
+//    { type: 'operator', value: '+' },
+//    { type: 'identifier', value: 'fibonacci' },
+//    { type: 'openeing_parenthesis', value: '(' },
+//    { type: 'identifier', value: 'n' },
+//    { type: 'operator', value: '+' },
+//    { type: 'Number', value: 2 },
+//    { type: 'closing_parenthesis', value: ')' },
+//]
 //const tokens = [
 //  { type: 'identifier', value: 'arr' },
 //  { type: 'dot_operator', value: '.' },
 //  { type: 'identifier', value: 'length' },
-//  { type: 'dot_operator', value: '.' },
-//  { type: 'identifier', value: 'max' },
-//  { type: 'dot_operator', value: '.' },
-//  { type: 'identifier', value: 'get' },
-//  { type: 'dot_operator', value: '.' },
-//  { type: 'identifier', value: 'got' },
-//  { type: 'dot_operator', value: '.' },
-//  { type: 'identifier', value: 'git' }
+//  { type: 'openeing_parenthesis', value: '(' },
+//  { type: 'identifier', value: 'k' },
+//  {type: "operator" , value : "+"},
+//  { type: 'identifier', value: 'j' },
+//  {type: "operator" , value : "+"},
+//  { type: 'identifier', value: 'k' },
+//  {type: "operator" , value : "+"},
+//  { type: 'identifier', value: 'j' },
+//  { type: 'closing_parenthesis', value: ')' }
 //]
-//
 
 //const tokens =
 //[
@@ -31,8 +54,9 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 //  { type: 'identifier', value: 'l' },
 //  { type: 'closing_parenthesis', value: ')' }
 //]
-// (k < j && i === l )
 
+// (k < j && i === l )
+//
 //const tokens = [
 //    {type: "Number" , value : "99"},
 //    {type: "operator" , value : "+"},
@@ -59,20 +83,28 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 
 function isItExpressionStatement(tokens) {
     let isExpLogicalOrBinary = false
-    tokens.forEach((token) => {
+    let isInParameter = false
+    tokens.forEach((token, idx) => {
+        if (token?.value === '(' && tokens[idx - 1]?.type === 'identifier') {
+            isInParameter = true
+        }
+        if (isInParameter && token.value === ')') {
+            isInParameter = false
+        }
         if (
-            token.value === '||' ||
-            token.value === '&&' ||
-            token.value === '==' ||
-            token.value === '===' ||
-            token.value === '!' ||
-            token.value === '+' ||
-            token.value === '-' ||
-            token.value === '/' ||
-            token.value === '*' ||
-            token.value === '%' ||
-            token.value === '>' ||
-            token.value === '<'
+            (token.value === '||' ||
+                token.value === '&&' ||
+                token.value === '==' ||
+                token.value === '===' ||
+                token.value === '!' ||
+                token.value === '+' ||
+                token.value === '-' ||
+                token.value === '/' ||
+                token.value === '*' ||
+                token.value === '%' ||
+                token.value === '>' ||
+                token.value === '<') &&
+            !isInParameter
         ) {
             isExpLogicalOrBinary = true
         }
@@ -80,8 +112,26 @@ function isItExpressionStatement(tokens) {
     return isExpLogicalOrBinary
 }
 
+function precedenceOf(opr) {
+    switch (opr) {
+        case '>':
+            return 5
+        case '<':
+            return 5
+        case '-':
+            return 4
+        case '+':
+            return 3
+        case '*':
+            return 2
+        case '/':
+            return 1
+        case '**':
+            return 0
+    }
+}
+
 export function parseLogicalExpression(tokens) {
-    console.log(tokens)
     if (!isItExpressionStatement(tokens)) {
         if (tokens.length === 1) {
             return getNode(tokens.pop())
@@ -94,10 +144,6 @@ export function parseLogicalExpression(tokens) {
         tokens.pop()
         tokens.shift()
     }
-
-    let token = tokens.pop()
-
-    let expression = []
 
     let idx = null
     let paramCount = 0
@@ -121,47 +167,54 @@ export function parseLogicalExpression(tokens) {
         }
     }
 
-    if (token?.value === ')' && !idx) {
+    let index = null
+
+    if (!idx) {
         let paranCount = 0
-        paranCount++
-        while (paranCount !== 0) {
-            token = tokens.pop()
-            if (token.value === ')') {
+        for (let i = 0; i < tokens?.length - 1; i++) {
+            if (tokens[i].value === '(') {
                 paranCount++
-            } else if (token.value === '(') {
+            } else if (tokens[i].value === ')') {
                 paranCount--
+            } else if (
+                paranCount <= 0 &&
+                (tokens[i].value === '+' ||
+                    tokens[i].value === '*' ||
+                    tokens[i].value === '/' ||
+                    tokens[i].value === '-' ||
+                    tokens[i].value === '**' ||
+                    tokens[i].value === '>' ||
+                    tokens[i].value === '<')
+            ) {
+                if (!index) {
+                    index = i
+                } else if (precedenceOf(tokens[index].value) < precedenceOf(tokens[i].value)) {
+                    index = i
+                }
             }
-            expression.unshift(token)
         }
-        expression.shift()
     }
 
     let exp = new BinaryExpression()
     if (idx) {
         exp = new LogicalExpression()
         let left = tokens.slice(0, idx)
-        let right = [...tokens.slice(idx + 1, tokens.length + 1), token]
+        let right = [...tokens.slice(idx + 1, tokens.length + 1)]
 
         exp.setLeft(parseLogicalExpression(left))
         exp.setOperator(tokens[idx].value)
         exp.setRight(parseLogicalExpression(right))
-    } else if (expression.length) {
-        if (!tokens.length) {
-            exp = parseLogicalExpression(expression)
-        } else {
-            exp.setRight(parseLogicalExpression(expression))
-            exp.setOperator(tokens?.pop()?.value)
-            exp.setLeft(parseLogicalExpression(tokens))
-        }
-    } else {
-        exp.setRight(getNode(token))
-        exp.setOperator(tokens?.pop()?.value)
-        exp.setLeft(parseLogicalExpression(tokens))
+    } else if (index) {
+        let left = tokens.slice(0, index)
+        let right = [...tokens.slice(index + 1, tokens.length + 1)]
+
+        exp.setLeft(parseLogicalExpression(left))
+        exp.setOperator(tokens[index].value)
+        exp.setRight(parseLogicalExpression(right))
     }
-    console.log(exp.right)
     return exp
 }
 
-//let ast  = parseLogicalExpression(tokens)
+//let ast = parseLogicalExpression2(tokens)
 //console.log(ast)
 //console.log(generate.default(ast).code)
