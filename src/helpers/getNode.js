@@ -1,4 +1,4 @@
-import { StringLiteral, NumericLiteral, Identifier } from '../tokenization/Classes.js'
+import { StringLiteral, NumericLiteral, Identifier , BooleanLiteral} from '../tokenization/Classes.js'
 
 export function getNode(token) {
     if (!token) {
@@ -11,5 +11,7 @@ export function getNode(token) {
             return new StringLiteral(token.value)
         case 'Number':
             return new NumericLiteral(token.value)
+        case 'boolean':
+            return new BooleanLiteral(token.value)
     }
 }

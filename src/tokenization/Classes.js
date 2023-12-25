@@ -224,3 +224,10 @@ export class ReturnStatement {
         this.argument = arg
     }
 }
+
+export class BooleanLiteral{
+    constructor(val){
+        this.type = "BooleanLiteral"
+        this.value = val
+    }
+}

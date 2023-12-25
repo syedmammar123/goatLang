@@ -1,5 +1,4 @@
 import generate from '@babel/generator'
-import { parseMemberExpression } from './MemberExpressionParsing.js'
 import fs from 'fs'
 import {
     AssignmentExpression,
@@ -11,8 +10,6 @@ import {
     Program,
     VariableDeclaration,
     VariableDeclarator,
-    StringLiteral,
-    NumericLiteral,
     Identifier,
     ExpressionStatement,
 } from './Classes.js'
