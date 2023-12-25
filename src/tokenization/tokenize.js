@@ -1,4 +1,4 @@
-import { isValidName } from '../helpers/token-checks.js'
+import { isValidName,isBoolean } from '../helpers/token-checks.js'
 import { keywords } from '../environment/environment.js'
 import fs from 'fs'
 
@@ -26,7 +26,15 @@ export function tokenize(code) {
                 value: char,
             })
             char = ''
-        } else if (code[i] !== '=' && char !== '' && !keywords.includes(char)) {
+        }
+        else if (isBoolean(char)){
+            tokens.push({
+                type: 'boolean',
+                value: char,
+            })
+            char = ''
+        }
+        else if (code[i] !== '=' && char !== '' && !keywords.includes(char)) {
             tokens.push({
                 type: 'identifier',
                 value: char,
@@ -53,6 +61,30 @@ export function tokenize(code) {
                 value: '[',
             })
             i++
+        }
+        if (code[i] === '-') {
+            let temp = ''
+
+            while (code[i] === '-') {
+                temp = temp + code[i]
+                i++
+            }
+
+            if (temp.length === 1) {
+                tokens.push({
+                    type: 'operator',
+                    value: '-',
+                })
+            }
+            if (temp.length === 2) {
+                tokens.push({
+                    type: 'operator',
+                    value: '--',
+                })
+            }
+            if (temp.length > 2) {
+                throw new Error('Invalid Operator')
+            }
         }
         if (code[i] === '+') {
             let temp = ''
@@ -89,6 +121,20 @@ export function tokenize(code) {
             tokens.push({
                 type: 'dot_operator',
                 value: '.',
+            })
+            i++
+        }
+        if (code[i] === '/') {
+            tokens.push({
+                type: 'operator',
+                value: '/',
+            })
+            i++
+        }
+        if (code[i] === '*') {
+            tokens.push({
+                type: 'operator',
+                value: '*',
             })
             i++
         }
@@ -222,9 +268,10 @@ export function tokenize(code) {
             char = ''
             temp = ''
         }
-        if (code[i] === "'") {
+        if (code[i] === "'" || code[i] === `"`) {
+            let usedStringSymbol = code[i]
             i++
-            while (code[i] !== "'") {
+            while (code[i] !== usedStringSymbol) {
                 char = char + code[i]
                 i++
             }
@@ -257,3 +304,6 @@ export function tokenize(code) {
     }
     return tokens
 }
+
+
+//console.log(tokenize(code))
