@@ -1,4 +1,4 @@
-function tokenizeCode(code) {
+export function tokenizeCode(code) {
   const tokens = [];
   const regex =
     /\b\w+\b|"[^"]*"|'[^']*'|\{|\}|\:|\,|\=|[-]?\d*\.\d+|\d+|true|false|null|undefined|\[|\]/g;
@@ -10,8 +10,6 @@ function tokenizeCode(code) {
       value: determineValue(match[0]),
     });
   }
-
-  
 
   return tokens;
 }
@@ -77,5 +75,6 @@ function determineValue(token) {
 // Example usage:
 const code =
   'object = { name: "hassan", age: 21, friends:null, achievements:undefined, hobbies:["coding", "failing", "succeeding"], address: {country: "Pakistan", city:"Karachi"}, 123:"numbers" }';
-const tokens = tokenizeCode(code);
-console.log(tokens);
+export const tokens = tokenizeCode(code);
+console.log(tokens)
+
