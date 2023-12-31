@@ -225,9 +225,9 @@ export class ReturnStatement {
     }
 }
 
-export class BooleanLiteral{
-    constructor(val){
-        this.type = "BooleanLiteral"
+export class BooleanLiteral {
+    constructor(val) {
+        this.type = 'BooleanLiteral'
         this.value = val
     }
 }

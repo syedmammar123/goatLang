@@ -1,4 +1,4 @@
-import { isValidName,isBoolean } from '../helpers/token-checks.js'
+import { isValidName, isBoolean } from '../helpers/token-checks.js'
 import { keywords } from '../environment/environment.js'
 import fs from 'fs'
 
@@ -26,15 +26,13 @@ export function tokenize(code) {
                 value: char,
             })
             char = ''
-        }
-        else if (isBoolean(char)){
+        } else if (isBoolean(char)) {
             tokens.push({
                 type: 'boolean',
                 value: char,
             })
             char = ''
-        }
-        else if (code[i] !== '=' && char !== '' && !keywords.includes(char)) {
+        } else if (code[i] !== '=' && char !== '' && !keywords.includes(char)) {
             tokens.push({
                 type: 'identifier',
                 value: char,
@@ -305,5 +303,4 @@ export function tokenize(code) {
     return tokens
 }
 
-
-//console.log(tokenize(code))
+console.log(tokenize(code))

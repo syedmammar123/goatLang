@@ -331,13 +331,14 @@ export const generateAst = (tokens) => {
                 // void statements
                 returnStat.setArgument(null)
             }
-            //            if (
-            //                (tokens[i].type === 'identifier' ||
-            //                    (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
-            //                (!variables.includes(tokens[i].value) && !scope[scope.length -1 ].params?.includes(tokens[i]?.value))
-            //            ) {
-            //                throw new Error('Can not declare variable in return Statement! ')
-            //            }
+//            if (
+//                (tokens[i].type === 'identifier' ||
+//                    (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
+//                !variables.includes(tokens[i].value) &&
+//                !scope[scope.length - 1].params?.includes(tokens[i]?.value)
+//            ) {
+//                throw new Error('Can not declare variable in return Statement! ')
+//            }
             // For assignment expression in return statements
             if (tokens[i].type === 'identifier' && variables.includes(tokens[i].value) && tokens[i + 1].value === '=') {
                 i = parseAssignmentExpressions(tokens, i, scope, 'setArgument', returnStat)
@@ -397,7 +398,13 @@ const generatedTokens = tokenize(code)
 console.log(generatedTokens)
 
 let ast1 = generateAst(generatedTokens)
-//console.log(ast1.body[1].expression.right.body.body)
+console.log(ast1)
+
+fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), err => {
+  if (err) {
+    console.error(err);
+  }
+})
 
 console.log('\n\n\n')
 console.log('Input')

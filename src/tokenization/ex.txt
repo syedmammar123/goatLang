@@ -14,7 +14,6 @@ fun print(name,date){
      }
 }
 
-
 if ((k < j && i === l) && i == u || t < p && w===o){
 }
 if (2){
