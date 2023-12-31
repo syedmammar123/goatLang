@@ -26,17 +26,17 @@ function determineType(token) {
   } else if (/\=/.test(token)) {
     return "equals";
   } else if (/^\d+$/.test(token)) {
-    return "number";
-  } else if (/^\b\w+\b$/.test(token)) {
-    return "identifier";
-  } else if (/^"[^"]*"$|^'[^']*'$/.test(token)) {
-    return "string";
-  } else if (/^true|false$/.test(token)) {
-    return "boolean";
+    return "NumericLiteral";
   } else if (/^null$/.test(token)) {
-    return "null";
+    return "NullLiteral";
+  } else if (/^true|false$/.test(token)) {
+    return "BooleanLiteral";
+  } else if (/^\b\w+\b$/.test(token)) {
+    return "Identifier";
+  } else if (/^"[^"]*"$|^'[^']*'$/.test(token)) {
+    return "StringLiteral";
   } else if (/^undefined$/.test(token)) {
-    return "undefined";
+    return "Identifier";
   } else if (/^\[$/.test(token)) {
     return "arrayStart";
   } else if (/^\]$/.test(token)) {
@@ -47,10 +47,11 @@ function determineType(token) {
 }
 
 function determineValue(token) {
-  if (/^\b\w+\b$/.test(token)) {
-    return token;
-  } else if (/^"[^"]*"$|^'[^']*'$/.test(token)) {
-    return token.slice(1, -1); // Remove quotes for string values
+  // if (/^\b\w+\b$/.test(token)) {
+  //   return token;
+  // } 
+   if (/^"[^"]*"$|^'[^']*'$/.test(token)) {
+    return token.slice(1, -1); 
   } else if (/^-?\d*\.\d+$/.test(token)) {
     return parseFloat(token);
   } else if (/^\d+$/.test(token)) {
@@ -62,7 +63,7 @@ function determineValue(token) {
   } else if (/^null$/.test(token)) {
     return null;
   } else if (/^undefined$/.test(token)) {
-    return undefined;
+    return "undefined";
   } else if (/^\[$/.test(token)) {
     return "[";
   } else if (/^\]$/.test(token)) {
@@ -74,7 +75,6 @@ function determineValue(token) {
 
 // Example usage:
 const code =
-  'object = { name: "hassan", age: 21, friends:null, achievements:undefined, hobbies:["coding", "failing", "succeeding"], address: {country: "Pakistan", city:"Karachi"}, 123:"numbers" }';
+  'object = { name: "hassan", age: 21, friends:null, achievements:undefined, hobbies:["coding", "failing", "succeeding"], address: {country: "Pakistan", city:"Karachi"}, 123:"numbers", cool:false }';
 export const tokens = tokenizeCode(code);
-console.log(tokens)
-
+console.log(tokens);
