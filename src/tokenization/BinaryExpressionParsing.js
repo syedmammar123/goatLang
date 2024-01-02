@@ -28,9 +28,9 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 //    { type: 'closing_parenthesis', value: ')' },
 //]
 //const tokens = [
-//  { type: 'identifier', value: 'arr' },
+//  { type: 'identifier', value: 'console' },
 //  { type: 'dot_operator', value: '.' },
-//  { type: 'identifier', value: 'length' },
+//  { type: 'identifier', value: 'log' },
 //  { type: 'openeing_parenthesis', value: '(' },
 //  { type: 'identifier', value: 'k' },
 //  {type: "operator" , value : "+"},
@@ -215,6 +215,6 @@ export function parseLogicalExpression(tokens) {
     return exp
 }
 
-//let ast = parseLogicalExpression2(tokens)
+//let ast = parseLogicalExpression(tokens)
 //console.log(ast)
 //console.log(generate.default(ast).code)

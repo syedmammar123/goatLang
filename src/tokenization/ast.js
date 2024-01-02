@@ -17,6 +17,7 @@ import {
     VariableDeclarator,
     Identifier,
     ExpressionStatement,
+    CallExpression,
 } from './Classes.js'
 import { tokenize } from './tokenize.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
@@ -331,6 +332,37 @@ export const generateAst = (tokens) => {
             i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false, true)
             i++
         }
+        if (tokens[i]?.type === "keyword" && tokens[i]?.value === "display"){
+            i++
+            if (tokens[i]?.type !== "opening_paran" && tokens[i]?.value !== "("){
+                throw new Error("Expected arguments after display statement. ")
+            }
+            
+                let tempTokens = [
+  { type: 'identifier', value: 'console' },
+  { type: 'dot_operator', value: '.' },
+  { type: 'identifier', value: 'log' },
+  { type: 'openeing_parenthesis', value: '(' },
+                ]
+    let paranCount = 1
+                i++
+    while (tokens[i].value !== ')' && paranCount !== 0) {
+                console.log(tokens[i],"invokedddddd")
+                if (tokens[i].value === ")"){
+            paranCount--
+        }
+            else if (tokens[i].value === "("){
+            paranCount++
+        }else if (tokens[i].value === ","){
+            i++
+        }
+            tempTokens.push(tokens[i])
+        i++
+    }
+      tempTokens.push(tokens[i])
+      i++
+           scope[scope.length - 1].push(parseLogicalExpression(tempTokens))
+        }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'return') {
             const returnStat = new ReturnStatement()
             scope[scope.length - 1].push(returnStat)
@@ -339,14 +371,14 @@ export const generateAst = (tokens) => {
                 // void statements
                 returnStat.setArgument(null)
             }
-//            if (
-//                (tokens[i].type === 'identifier' ||
-//                    (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
-//                !variables.includes(tokens[i].value) &&
-//                !scope[scope.length - 1].params?.includes(tokens[i]?.value)
-//            ) {
-//                throw new Error('Can not declare variable in return Statement! ')
-//            }
+            //            if (
+            //                (tokens[i].type === 'identifier' ||
+            //                    (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
+            //                !variables.includes(tokens[i].value) &&
+            //                !scope[scope.length - 1].params?.includes(tokens[i]?.value)
+            //            ) {
+            //                throw new Error('Can not declare variable in return Statement! ')
+            //            }
             // For assignment expression in return statements
             if (tokens[i].type === 'identifier' && variables.includes(tokens[i].value) && tokens[i + 1].value === '=') {
                 i = parseAssignmentExpressions(tokens, i, scope, 'setArgument', returnStat)
@@ -391,96 +423,79 @@ export const generateAst = (tokens) => {
             }
         }
 
-
-if (tokens[i]?.value === 'for') {
-            let forStatement = new ForStatement();
-            i++;
+        if (tokens[i]?.value === 'for') {
+            let forStatement = new ForStatement()
+            i++
 
             if (tokens[i]?.type === 'identifier') {
-                let init = new AssignmentExpression();
-                let left = new Identifier(tokens[i]?.value);
-                let right;
+                let init = new AssignmentExpression()
+                let left = new Identifier(tokens[i]?.value)
+                let right
 
-                i++; // Move to the next token
+                i++ // Move to the next token
 
                 if (tokens[i]?.value !== 'from') {
-                    throw new Error('Expected "from" after loop initialization.');
+                    throw new Error('Expected "from" after loop initialization.')
                 }
 
-                i++; // Move to the numeric value
-                if (tokens[i]?.type==="Number"){
-                 right = getNode(tokens[i]);
-                 i++;
+                i++ // Move to the numeric value
+                if (tokens[i]?.type === 'Number') {
+                    right = getNode(tokens[i])
+                    i++
+                } else {
+                    throw new Error('Expected a number after from keyword')
                 }
-                else{
-                throw new Error("Expected a number after from keyword");
-                }
-               
 
-                init.setLeft(left);
-                init.setRight(right);
-                forStatement.setInit(init);
-
+                init.setLeft(left)
+                init.setRight(right)
+                forStatement.setInit(init)
             } else {
-                throw new Error('Expected an identifier for loop initialization.');
+                throw new Error('Expected an identifier for loop initialization.')
             }
 
             // Parse condition with binary expression support
-          
+
             if (tokens[i]?.value !== 'to') {
-                throw new Error('Expected "to" after loop initialization value.');
+                throw new Error('Expected "to" after loop initialization value.')
+            } else {
+                i++
+                let cond = checkCond(forStatement.init.right.value, tokens[i]?.value)
+                let _oper = cond ? '<' : '>'
+                let conditionValue = BinaryExpParserForLoop.parse(tokens, i, _oper, forStatement.init.left, '')
+                forStatement.setTest(conditionValue)
+                i++
             }
-            else{
-            i++;
-            let cond = checkCond(forStatement.init.right.value , tokens[i]?.value);
-            let _oper = cond?'<':'>';
-            let conditionValue = BinaryExpParserForLoop.parse(tokens, i , _oper , forStatement.init.left ,'');
-            forStatement.setTest(conditionValue);
-            i++;
-            }
-           
+
             if (tokens[i]?.value !== 'by') {
-                throw new Error('Expected "by" after loop condition.');
+                throw new Error('Expected "by" after loop condition.')
             }
 
             // Parse update with binary expression support
-            i++;
-            let updateValue;
-            if(tokens[i]?.type=="operator")
-            {
-               
-                 updateValue = BinaryExpParserForLoop.parse(tokens, i+1 , '=' , forStatement.init.left , tokens[i].value );
-                 i++;
+            i++
+            let updateValue
+            if (tokens[i]?.type == 'operator') {
+                updateValue = BinaryExpParserForLoop.parse(tokens, i + 1, '=', forStatement.init.left, tokens[i].value)
+                i++
+            } else if (tokens[i]?.type == 'Number') {
+                let step = checkStep(tokens[i]?.value, forStatement.init.right.value, forStatement.test.right.value)
 
-            }
-           
-            else if(tokens[i]?.type=="Number"){
-           
-                let step= checkStep(tokens[i]?.value ,forStatement.init.right.value , forStatement.test.right.value );
-               
-                updateValue = BinaryExpParserForLoop.parse(tokens, i , '=' , forStatement.init.left , step );
-
+                updateValue = BinaryExpParserForLoop.parse(tokens, i, '=', forStatement.init.left, step)
             }
 
-           
-            forStatement.setUpdate(updateValue);
-          
+            forStatement.setUpdate(updateValue)
 
-            i++;
+            i++
             if (tokens[i]?.type === 'openening_blockscope' && tokens[i]?.value === '{') {
-                i++;
-                let body = new BlockStatement();
-                 forStatement.setBody(body);
+                i++
+                let body = new BlockStatement()
+                forStatement.setBody(body)
                 scope.push(body)
             } else {
-                throw new Error('Expected "{" to start the loop body.');
+                throw new Error('Expected "{" to start the loop body.')
             }
 
-            ast.push(forStatement);
+            ast.push(forStatement)
         }
-
-
-
 
         if (tokens[i]?.value === '}' && tokens[i]?.type === 'closing_blockscope') {
             scope.pop() // block statement khatam hoti hai to just scope se current scope pop krdo
@@ -500,10 +515,10 @@ console.log(generatedTokens)
 let ast1 = generateAst(generatedTokens)
 console.log(ast1.body[0].update)
 
-fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), err => {
-  if (err) {
-    console.error(err);
-  }
+fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
+    if (err) {
+        console.error(err)
+    }
 })
 
 console.log('\n\n\n')
@@ -524,29 +539,21 @@ console.log('\n\n\n')
 //}
 //
 
-
-function checkCond(startval , endval)
-{
-    return (startval<endval);
+function checkCond(startval, endval) {
+    return startval < endval
 }
-function checkStep(_step , start , end){
-    if(_step>0 )
-    {
-        if(start<end){
-        return '+';
+function checkStep(_step, start, end) {
+    if (_step > 0) {
+        if (start < end) {
+            return '+'
+        } else {
+            throw new Error('Starting value must be less than End value')
         }
-        else{
-            throw new Error("Starting value must be less than End value");
+    } else if (_step < 0) {
+        if (start > end) {
+            return '-'
+        } else {
+            throw new Error('Starting value must be greater than End value')
         }
-    }
-    else if (_step<0){
-        if(start>end){
-            return '-';
-        }
-        else{
-            throw new Error("Starting value must be greater than End value");
-            
-        }
-        
     }
 }
