@@ -25,7 +25,7 @@ import { getNode } from '../helpers/getNode.js'
 import { keywords } from '../environment/environment.js'
 import exp from 'constants'
 
-const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/tokenization/code', { encoding: 'utf8' })
+//const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/tokenization/code', { encoding: 'utf8' })
 
 function parseVariables(tokens, i, scope) {
     let declarator1 = new VariableDeclarator()
@@ -55,7 +55,6 @@ function parseVariables(tokens, i, scope) {
     } else {
         let expTokens = []
         while (true) {
-            console.log(expTokens)
             if (
                 ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
                     expTokens[expTokens.length - 1]?.type === 'string' ||
@@ -347,7 +346,6 @@ export const generateAst = (tokens) => {
     let paranCount = 1
                 i++
     while (tokens[i].value !== ')' && paranCount !== 0) {
-                console.log(tokens[i],"invokedddddd")
                 if (tokens[i].value === ")"){
             paranCount--
         }
@@ -509,25 +507,23 @@ export const generateAst = (tokens) => {
     return ast
 }
 
-const generatedTokens = tokenize(code)
-console.log(generatedTokens)
+//const generatedTokens = tokenize(code)
 
-let ast1 = generateAst(generatedTokens)
-console.log(ast1.body[0].update)
+//let ast1 = generateAst(generatedTokens)
 
-fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
-    if (err) {
-        console.error(err)
-    }
-})
+//fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
+//    if (err) {
+//        console.error(err)
+//    }
+//})
 
-console.log('\n\n\n')
-console.log('Input')
-console.log(code)
-console.log('\n')
-console.log('Output')
-console.log(generate.default(ast1).code)
-console.log('\n\n\n')
+//console.log('\n\n\n')
+//console.log('Input')
+//console.log(code)
+//console.log('\n')
+//console.log('Output')
+//console.log(generate.default(ast1).code)
+//console.log('\n\n\n')
 
 //fun print(name,date){
 //     a = 'Hello world'
