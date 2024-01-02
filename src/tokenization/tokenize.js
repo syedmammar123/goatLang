@@ -2,7 +2,7 @@ import { isValidName, isBoolean } from '../helpers/token-checks.js'
 import { keywords } from '../environment/environment.js'
 import fs from 'fs'
 
-const code = fs.readFileSync('./code', { encoding: 'utf8' })
+//const code = fs.readFileSync('./code', { encoding: 'utf8' })
 
 export function tokenize(code) {
     let i = 0
@@ -303,4 +303,4 @@ export function tokenize(code) {
     return tokens
 }
 
-console.log(tokenize(code))
+//console.log(tokenize(code))

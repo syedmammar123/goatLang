@@ -127,11 +127,11 @@ export class IfStatement {
     }
 }
 export class BinaryExpression {
-    constructor() {
+    constructor(operator, left, right) {
         this.type = 'BinaryExpression'
-        this.left = null
-        this.operator = null
-        this.right = null
+        this.left = left ?? null
+        this.operator = operator ?? null
+        this.right = right ?? null
     }
     setLeft(left) {
         this.left = left
@@ -201,11 +201,11 @@ export class MemberExpression {
 }
 
 export class AssignmentExpression {
-    constructor() {
+    constructor(left, right) {
         this.type = 'AssignmentExpression'
         this.operator = '='
-        this.right = null
-        this.left = null
+        this.left = left ?? null
+        this.right = right ?? null
     }
     setRight(smth) {
         this.right = smth
@@ -229,5 +229,127 @@ export class BooleanLiteral {
     constructor(val) {
         this.type = 'BooleanLiteral'
         this.value = val
+    }
+}
+
+export class ObjectExpression {
+    constructor(){
+        this.type = "ObjectExpression"
+        this.properties = []
+    }
+    push(smth){
+        this.properties.push(smth)
+    }
+}
+
+
+export class ObjectProperty{
+    constructor(){
+        this.type = "ObjectProperty"
+        this.method = false
+        this.computed = false 
+        this.shorthand = false
+        this.key = null
+        this.value = null
+    }
+    setKey(smth){
+        this.key = smth
+    }
+    setValue(smth){
+        this.value = smth
+    }
+}
+
+
+export class ForLoopStepBinaryExpression {
+    static stepParse(l , r , o){
+        let left;
+        let right;
+        let operator;
+        if(l != ''){
+            left = l;
+        }
+        right = r;
+        operator=o;
+
+        return new BinaryExpression(operator, left, right);
+    }
+   
+}
+
+
+export class BinaryExpParserForLoop {
+    static parse(tokens, i , op , forloopId , forloopStep) {
+        let right;
+        let operator;
+        let left;
+        if (tokens[i].type === 'openeing_parenthesis') {
+            i++;
+            left = BinaryExpParserForLoop.parse(tokens, i);
+            i++;
+            
+        } else if (tokens[i].type === 'Number' && forloopStep=='' || tokens[i].type === 'identifier' ) {
+            left = tokens[i].type === 'Number' ? forloopId : new Identifier(tokens[i].value);
+            
+        }
+       
+        else if ( (tokens[i].value === "by" && forloopId!='') || (tokens[i].type === 'Number' && forloopStep!='')){
+            left=forloopId;
+          
+        }
+         else {
+            throw new Error('Unexpected token in expression.');
+        }
+       
+
+        if (tokens[i].type === 'openeing_parenthesis') {
+            i++;
+            right =BinaryExpParserForLoop.parse(tokens, i);
+            i++;
+        } else if (tokens[i].type === 'Number' && forloopStep =='' || tokens[i].type === 'identifier') {
+            right = tokens[i].type === 'Number' ? new NumericLiteral(tokens[i].value) : new Identifier(tokens[i].value);
+            i++;
+        }
+        else if (tokens[i].type === 'Number' && forloopStep != '')
+        {
+            if(tokens[i].value<0){
+               tokens[i].value = Math.abs(tokens[i].value);
+                
+            }
+           
+            
+            right = ForLoopStepBinaryExpression.stepParse(forloopId, new NumericLiteral(tokens[i].value), forloopStep);
+        }
+        operator= op;
+      
+       
+
+        return new BinaryExpression(operator, left, right);
+    }
+}
+
+export class ForStatement {
+    constructor() {
+        this.type = 'ForStatement';
+        this.init = null;
+        this.test = null;
+        this.update = null;
+        this.body = null;
+    }
+
+    setInit(init) {
+        this.init = init;
+    }
+
+    setTest(test) {
+        this.test = test;
+    }
+
+    setUpdate(update) {
+        this.update = update;
+    }
+
+    setBody(body) {
+        this.body = body;
     }
 }

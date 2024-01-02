@@ -1,4 +1,4 @@
-import { StringLiteral, NumericLiteral, Identifier , BooleanLiteral} from '../tokenization/Classes.js'
+import { StringLiteral, NumericLiteral, Identifier, BooleanLiteral } from '../tokenization/Classes.js'
 
 export function getNode(token) {
     if (!token) {

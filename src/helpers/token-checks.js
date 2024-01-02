@@ -3,5 +3,5 @@ export const isValidName = (name) => {
 }
 
 export const isBoolean = (char) => {
-    return char === "true" || char === "false"
+    return char === 'true' || char === 'false'
 }

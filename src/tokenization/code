@@ -1,3 +1,6 @@
-a  = 1000
 
-b = "Hello world"
+    fun print(){
+    const a = 200
+    b = 9
+    a.length
+    }
