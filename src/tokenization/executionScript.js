@@ -4,7 +4,6 @@ import fs from 'fs'
 import path from 'path'
 import { generateJsCode } from './main.js'
 
-
 function filePathToUrl(filePath) {
   const forwardSlashPath = filePath.replace(/\\/g, '/');
 
@@ -12,9 +11,6 @@ function filePathToUrl(filePath) {
 
   return fileUrl.href;
 }
-
-
-
 
 let filePath = path.join(process.cwd(),process.argv[2])
 

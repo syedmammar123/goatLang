@@ -7,6 +7,7 @@ export function generateJsCode(goatCode){
     try {
     let tokens = tokenize(goatCode)
     let ast = generateAst(tokens)
+
     let code = generate.default(ast).code
         return code
     }catch(e){

@@ -244,7 +244,7 @@ export const generateAst = (tokens) => {
                 tokens[i].type === 'Number' ||
                 tokens[i].type === 'string') &&
                 tokens[i + 1].value !== '=') ||
-            tokens[i + 1].value === '('
+            (tokens[i + 1].value === '(' && tokens[i]?.type !== "keyword")
         ) {
             let expTokens = []
             while (true) {
