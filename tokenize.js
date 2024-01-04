@@ -74,7 +74,7 @@ function determineValue(token) {
 }
 
 // Example usage:
-const code =
-  'object = { name: "hassan", age: 21, friends:null, achievements:undefined, hobbies:["coding", "failing", "succeeding"], address: {country: "Pakistan", city:"Karachi"}, 123:"numbers", cool:false }';
-export const tokens = tokenizeCode(code);
-console.log(tokens);
+// const code =
+//   '{ name: "hassan", age: 21, friends:null, achievements:undefined, hobbies:["coding", "failing", "succeeding"], address: {country: "Pakistan", city:"Karachi"}, 123:"numbers", cool:false }';
+// export const tokens = tokenizeCode(code);
+// console.log(tokens);
