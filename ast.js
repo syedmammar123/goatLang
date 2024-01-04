@@ -1,3 +1,4 @@
+import { identifyToken } from "./helper.js";
 import { tokenizeCode } from "./tokenize.js";
 
 function createAST(tokens) {
@@ -7,13 +8,13 @@ function createAST(tokens) {
   while (current < tokens.length) {
     const token = tokens[current];
 
-    if (token.type === "Identifier") {
+    if (token.type === "identifier") {
       stack.push({
         type: "Identifier",
         name: token.value,
       });
       
-    }else if(token.type === "NumericLiteral"){
+    }else if(token.type === "Number"){
       stack.push({
         type: "NumericLiteral",
         name: token.value,
@@ -92,20 +93,21 @@ function createAST(tokens) {
         stack[0].right.properties.push(property);
         // console.log(tokens[current])
       } else {
-        let property = {
-          type: "ObjectProperty",
-          key: stack.pop(),
-          value:
-            tokens[current+1].type == "Identifier"
-              ? {
-                  type: tokens[current + 1].type,
-                  name: tokens[current + 1].value,
-                }
-              : {
-                  type: tokens[current + 1].type,
-                  value: tokens[current + 1].value,
-                },
-        };
+        // let property = {
+        //   type: "ObjectProperty",
+        //   key: stack.pop(),
+        //   value:
+        //     tokens[current+1].type == "Identifier"
+        //       ? {
+        //           type: tokens[current + 1].type,
+        //           name: tokens[current + 1].value,
+        //         }
+        //       : {
+        //           type: tokens[current + 1].type,
+        //           value: tokens[current + 1].value,
+        //         },
+        // };
+        let property = identifyToken(stack,tokens[current+1])
         stack[0].right.properties.push(property);
         current += 2;
       }
@@ -156,67 +158,64 @@ function createAST(tokens) {
 }
 
 // Example usage:
-// const tokens = [
-//   { type: "Identifier", value: "object" },
-//   { type: "equals", value: "=" },
-//   { type: "objectStart", value: "{" },
-//   { type: "Identifier", value: "name" },
-//   { type: "colon", value: ":" },
-//   { type: "StringLiteral", value: "hassan" },
-//   { type: "comma", value: "," },
-//   { type: "Identifier", value: "age" },
-//   { type: "colon", value: ":" },
-//   { type: "NumericLiteral", value: 21 },
-//   { type: "comma", value: "," },
-//   { type: "Identifier", value: "friends" },
-//   { type: "colon", value: ":" },
-//   { type: "NullLiteral", value: "null" },
-//   { type: "comma", value: "," },
-//   { type: "Identifier", value: "achievements" },
-//   { type: "colon", value: ":" },
-//   { type: "Identifier", value: "undefined" },
-//   { type: "comma", value: "," },
-//   { type: "Identifier", value: "hobbies" },
-//   { type: "colon", value: ":" },
-//   { type: "arrayStart", value: "[" },
-//   { type: "StringLiteral", value: "coding" },
-//   { type: "comma", value: "," },
-//   { type: "StringLiteral", value: "failing" },
-//   { type: "comma", value: "," },
-//   { type: "StringLiteral", value: "succeeding" },
-//   { type: "arrayEnd", value: "]" },
-//   { type: "comma", value: "," },
-//   { type: "Identifier", value: "address" },
-//   { type: "colon", value: ":" },
-//   { type: "objectStart", value: "{" },
-//   { type: "Identifier", value: "country" },
-//   { type: "colon", value: ":" },
-//   { type: "StringLiteral", value: "Pakistan" },
-//   { type: "comma", value: "," },
-//   { type: "Identifier", value: "city" },
-//   { type: "colon", value: ":" },
-//   { type: "StringLiteral", value: "Karachi" },
-//   { type: "objectEnd", value: "}" },
-//   { type: "comma", value: "," },
-//   { type: "NumericLiteral", value: 123 },
-//   { type: "colon", value: ":" },
-//   { type: "StringLiteral", value: "numbers" },
-//   { type: "comma", value: "," },
-//   { type: "Identifier", value: "cool" },
-//   { type: "colon", value: ":" },
-//   { type: "BooleanLiteral", value: false },
-//   { type: "objectEnd", value: "}" },
-// ];
+const tokens = [
+  { type: "identifier", value: "object" },
+  { type: "equals", value: "=" },
+  { type: "objectStart", value: "{" },
+  { type: "identifier", value: "name" },
+  { type: "colon", value: ":" },
+  { type: "string", value: "hassan" },
+  { type: "comma", value: "," },
+  { type: "identifier", value: "age" },
+  { type: "colon", value: ":" },
+  { type: "Number", value: 21 },
+  { type: "comma", value: "," },
+  { type: "identifier", value: "friends" },
+  { type: "colon", value: ":" },
+  { type: "NullLiteral", value: "null" },
+  { type: "comma", value: "," },
+  { type: "identifier", value: "achievements" },
+  { type: "colon", value: ":" },
+  { type: "identifier", value: "undefined" },
+  { type: "comma", value: "," },
+  { type: "identifier", value: "hobbies" },
+  { type: "colon", value: ":" },
+  { type: "arrayStart", value: "[" },
+  { type: "string", value: "coding" },
+  { type: "comma", value: "," },
+  { type: "string", value: "failing" },
+  { type: "comma", value: "," },
+  { type: "string", value: "succeeding" },
+  { type: "arrayEnd", value: "]" },
+  { type: "comma", value: "," },
+  { type: "identifier", value: "address" },
+  { type: "colon", value: ":" },
+  { type: "objectStart", value: "{" },
+  { type: "identifier", value: "country" },
+  { type: "colon", value: ":" },
+  { type: "string", value: "Pakistan" },
+  { type: "comma", value: "," },
+  { type: "identifier", value: "city" },
+  { type: "colon", value: ":" },
+  { type: "string", value: "Karachi" },
+  { type: "objectEnd", value: "}" },
+  { type: "comma", value: "," },
+  { type: "Number", value: 123 },
+  { type: "colon", value: ":" },
+  { type: "string", value: "numbers" },
+  { type: "comma", value: "," },
+  { type: "identifier", value: "cool" },
+  { type: "colon", value: ":" },
+  { type: "boolean", value: false },
+  { type: "objectEnd", value: "}" },
+];
 
-const code =
-  '{ name: "hassan", age: 21, friends:null, achievements:undefined, hobbies:["coding", "failing", "succeeding"], address: {country: "Pakistan", city:"Karachi"}, 123:"numbers", cool:false }';
 
   let declaration =  [
-    { type: "Identifier", value: "temp" },
+    { type: "identifier", value: "temp" },
     { type: "equals", value: "=" }]
 
 try {
-  const tokens = tokenizeCode(code)
   const ast = createAST([...declaration,...tokens]);
   console.log(JSON.stringify(ast, null, 2));
 } catch (error) {
