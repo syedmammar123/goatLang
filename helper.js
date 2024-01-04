@@ -1,41 +1,37 @@
 export const identifyToken = (stack,object) => {
-    let property = {
-        type: "ObjectProperty",
-        key: stack.pop(),
-      };
 
       switch(object.type){
         case 'identifier':
-            property.value = {
+            return {
                 type: "Identifier",
                 name: object.value,
               }
             break;
         case 'string':
-            property.value = {
+            return {
                 type: "StringLiteral",
                 value: object.value,
               }
             break;
         case 'Number':
-            property.value = {
+            return {
                 type: "NumericLiteral",
                 value: object.value,
               }
             break;
         case 'boolean':
-            property.value = {
+            return {
                 type: "BooleanLiteral",
                 value: object.value,
               }
             break;
         default:
-            property.value = {
+            return {
                 type: object.type,
                 value: object.value,
               }
             break;
       }
 
-      return property;
+    
 }

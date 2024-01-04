@@ -36,15 +36,18 @@ function createAST(tokens) {
           if (tokens[current].type === "comma") {
             current++;
           } else {
-            tokens[current].type === "Identifier"
-              ? property.value.elements.push({
-                  type: tokens[current].type,
-                  name: tokens[current].value,
-                })
-              : property.value.elements.push({
-                  type: tokens[current].type,
-                  value: tokens[current].value,
-                });
+            // tokens[current].type === "Identifier"
+            //   ? property.value.elements.push({
+            //       type: tokens[current].type,
+            //       name: tokens[current].value,
+            //     })
+            //   : property.value.elements.push({
+            //       type: tokens[current].type,
+            //       value: tokens[current].value,
+            //     });
+                let arrayElement = identifyToken(stack,tokens[current])
+                property.value.elements.push(arrayElement)
+
             current++;
           }
         }
@@ -69,23 +72,25 @@ function createAST(tokens) {
           ) {
             current++;
           } else {
-            property.value.properties.push({
-              type: "ObjectProperty",
-              key: {
-                type: tokens[current].type,
-                name: tokens[current].value,
-              },
-              value:
-                tokens[current].type === "Identifier"
-                  ? {
-                      type: tokens[current + 2].type,
-                      name: tokens[current + 2].value,
-                    }
-                  : {
-                      type: tokens[current + 2].type,
-                      value: tokens[current + 2].value,
-                    },
-            });
+            // property.value.properties.push({
+            //   type: "ObjectProperty",
+            //   key: {
+            //     type: tokens[current].type,
+            //     name: tokens[current].value,
+            //   },
+            //   value:
+            //     tokens[current].type === "Identifier"
+            //       ? {
+            //           type: tokens[current + 2].type,
+            //           name: tokens[current + 2].value,
+            //         }
+            //       : {
+            //           type: tokens[current + 2].type,
+            //           value: tokens[current + 2].value,
+            //         },
+            // });
+            let objectElement = identifyToken(stack,tokens[current + 2])
+            property.value.properties.push(objectElement)
             current += 3;
           }
         }
@@ -93,21 +98,12 @@ function createAST(tokens) {
         stack[0].right.properties.push(property);
         // console.log(tokens[current])
       } else {
-        // let property = {
-        //   type: "ObjectProperty",
-        //   key: stack.pop(),
-        //   value:
-        //     tokens[current+1].type == "Identifier"
-        //       ? {
-        //           type: tokens[current + 1].type,
-        //           name: tokens[current + 1].value,
-        //         }
-        //       : {
-        //           type: tokens[current + 1].type,
-        //           value: tokens[current + 1].value,
-        //         },
-        // };
-        let property = identifyToken(stack,tokens[current+1])
+        let property = {
+          type: "ObjectProperty",
+          key: stack.pop(),
+          value:{}
+        };
+         property.value = identifyToken(stack,tokens[current+1])
         stack[0].right.properties.push(property);
         current += 2;
       }
