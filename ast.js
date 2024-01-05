@@ -21,7 +21,7 @@ function createAST(tokens) {
       });
     } 
     else if (token.type === "colon") {
-      if (tokens[current + 1].type == "arrayStart") {
+      if (tokens[current + 1].type == "openening_squarly") {
         current += 2;
         let property = {
           type: "ObjectProperty",
@@ -32,19 +32,10 @@ function createAST(tokens) {
           },
         };
 
-        while (tokens[current].type !== "arrayEnd") {
+        while (tokens[current].type !== "closing_squarly") {
           if (tokens[current].type === "comma") {
             current++;
           } else {
-            // tokens[current].type === "Identifier"
-            //   ? property.value.elements.push({
-            //       type: tokens[current].type,
-            //       name: tokens[current].value,
-            //     })
-            //   : property.value.elements.push({
-            //       type: tokens[current].type,
-            //       value: tokens[current].value,
-            //     });
                 let arrayElement = identifyToken(stack,tokens[current])
                 property.value.elements.push(arrayElement)
 
@@ -72,23 +63,6 @@ function createAST(tokens) {
           ) {
             current++;
           } else {
-            // property.value.properties.push({
-            //   type: "ObjectProperty",
-            //   key: {
-            //     type: tokens[current].type,
-            //     name: tokens[current].value,
-            //   },
-            //   value:
-            //     tokens[current].type === "Identifier"
-            //       ? {
-            //           type: tokens[current + 2].type,
-            //           name: tokens[current + 2].value,
-            //         }
-            //       : {
-            //           type: tokens[current + 2].type,
-            //           value: tokens[current + 2].value,
-            //         },
-            // });
             let objectElement = identifyToken(stack,tokens[current + 2])
             property.value.properties.push(objectElement)
             current += 3;
@@ -96,7 +70,7 @@ function createAST(tokens) {
         }
         current++
         stack[0].right.properties.push(property);
-        // console.log(tokens[current])
+       
       } else {
         let property = {
           type: "ObjectProperty",
@@ -154,58 +128,89 @@ function createAST(tokens) {
 }
 
 // Example usage:
-const tokens = [
-  { type: "identifier", value: "object" },
-  { type: "equals", value: "=" },
-  { type: "objectStart", value: "{" },
-  { type: "identifier", value: "name" },
-  { type: "colon", value: ":" },
-  { type: "string", value: "hassan" },
-  { type: "comma", value: "," },
-  { type: "identifier", value: "age" },
-  { type: "colon", value: ":" },
-  { type: "Number", value: 21 },
-  { type: "comma", value: "," },
-  { type: "identifier", value: "friends" },
-  { type: "colon", value: ":" },
-  { type: "NullLiteral", value: "null" },
-  { type: "comma", value: "," },
-  { type: "identifier", value: "achievements" },
-  { type: "colon", value: ":" },
-  { type: "identifier", value: "undefined" },
-  { type: "comma", value: "," },
-  { type: "identifier", value: "hobbies" },
-  { type: "colon", value: ":" },
-  { type: "arrayStart", value: "[" },
-  { type: "string", value: "coding" },
-  { type: "comma", value: "," },
-  { type: "string", value: "failing" },
-  { type: "comma", value: "," },
-  { type: "string", value: "succeeding" },
-  { type: "arrayEnd", value: "]" },
-  { type: "comma", value: "," },
-  { type: "identifier", value: "address" },
-  { type: "colon", value: ":" },
-  { type: "objectStart", value: "{" },
-  { type: "identifier", value: "country" },
-  { type: "colon", value: ":" },
-  { type: "string", value: "Pakistan" },
-  { type: "comma", value: "," },
-  { type: "identifier", value: "city" },
-  { type: "colon", value: ":" },
-  { type: "string", value: "Karachi" },
-  { type: "objectEnd", value: "}" },
-  { type: "comma", value: "," },
-  { type: "Number", value: 123 },
-  { type: "colon", value: ":" },
-  { type: "string", value: "numbers" },
-  { type: "comma", value: "," },
-  { type: "identifier", value: "cool" },
-  { type: "colon", value: ":" },
-  { type: "boolean", value: false },
-  { type: "objectEnd", value: "}" },
-];
+// const tokens = [
+//   { type: "objectStart", value: "{" },
+//   { type: "identifier", value: "name" },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "hassan" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "age" },
+//   { type: "colon", value: ":" },
+//   { type: "Number", value: 21 },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "friends" },
+//   { type: "colon", value: ":" },
+//   { type: "NullLiteral", value: "null" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "achievements" },
+//   { type: "colon", value: ":" },
+//   { type: "identifier", value: "undefined" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "hobbies" },
+//   { type: "colon", value: ":" },
+//   { type: "openening_squarly", value: "[" },
+//   { type: "string", value: "coding" },
+//   { type: "comma", value: "," },
+//   { type: "string", value: "failing" },
+//   { type: "comma", value: "," },
+//   { type: "string", value: "succeeding" },
+//   { type: "closing_squarly", value: "]" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "address" },
+//   { type: "colon", value: ":" },
+//   { type: "objectStart", value: "{" },
+//   { type: "identifier", value: "country" },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "Pakistan" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "city" },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "Karachi" },
+//   { type: "objectEnd", value: "}" },
+//   { type: "comma", value: "," },
+//   { type: "Number", value: 123 },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "numbers" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "cool" },
+//   { type: "colon", value: ":" },
+//   { type: "boolean", value: false },
+//   { type: "objectEnd", value: "}" },
+// ];
 
+const tokens = [
+  { type: 'objectStart', value: '{' },
+  { type: 'identifier', value: 'name' },
+  { type: 'colon', value: ':' },
+  { type: 'string', value: 'usman' },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'age' },
+  { type: 'colon', value: ':' },
+  { type: 'Number', value: 20 },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'lol' },
+  { type: 'colon', value: ':' },
+  { type: 'objectStart', value: '{' },
+  { type: 'identifier', value: 'lel' },
+  { type: 'colon', value: ':' },
+  { type: 'string', value: '8' },
+  { type: 'objectEnd', value: '}' },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'is' },
+  { type: 'colon', value: ':' },
+  { type: 'boolean', value: 'false' },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'arr' },
+  { type: 'colon', value: ':' },
+  { type: 'openening_squarly', value: '[' },
+  { type: 'Number', value: 2 },
+  { type: 'comma', value: ',' },
+  { type: 'Number', value: 3 },
+  { type: 'comma', value: ',' },
+  { type: 'Number', value: 5 },
+  { type: 'closing_squarly', value: ']' },
+  { type: 'objectEnd', value: '}' }
+]
 
   let declaration =  [
     { type: "identifier", value: "temp" },
