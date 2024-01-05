@@ -63,8 +63,15 @@ function createAST(tokens) {
           ) {
             current++;
           } else {
-            let objectElement = identifyToken(stack,tokens[current + 2])
-            property.value.properties.push(objectElement)
+            let objectProperty = {
+              type: "Property"
+
+            }
+            let objectKey = identifyToken(stack,tokens[current])
+            let objectValue = identifyToken(stack,tokens[current + 2])
+            objectProperty.key = objectKey
+            objectProperty.value = objectValue
+            property.value.properties.push(objectProperty)
             current += 3;
           }
         }
