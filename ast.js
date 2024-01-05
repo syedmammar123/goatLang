@@ -1,5 +1,4 @@
 import { identifyToken } from "./helper.js";
-import { tokenizeCode } from "./tokenize.js";
 
 function createAST(tokens) {
   const stack = [];
@@ -65,7 +64,6 @@ function createAST(tokens) {
           } else {
             let objectProperty = {
               type: "Property"
-
             }
             let objectKey = identifyToken(stack,tokens[current])
             let objectValue = identifyToken(stack,tokens[current + 2])
