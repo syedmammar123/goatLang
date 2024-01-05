@@ -23,9 +23,10 @@ import { tokenize } from './tokenize.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
 import { getNode } from '../helpers/getNode.js'
 import { keywords } from '../environment/environment.js'
+import { parseObject } from './object.js'
 import exp from 'constants'
 
-//const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/tokenization/code', { encoding: 'utf8' })
+const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/tokenization/code.goat', { encoding: 'utf8' })
 
 function parseVariables(tokens, i, scope) {
     let declarator1 = new VariableDeclarator()
@@ -41,6 +42,28 @@ function parseVariables(tokens, i, scope) {
         init = new ArrayExpression()
         scope.push(init)
         declarator1.setInit(init)
+    }
+    else if (tokens[i].value === "{" || tokens[i].type === "objectStart"){
+        let tempTokens = [
+    { type: "identifier", value: "temp" },
+    { type: "equals", value: "=" }
+]
+        tempTokens.push(tokens[i])
+        i++
+        let objCount = 1
+        while (objCount !== 0){
+            console.log(tokens[i])
+            if ( tokens[i]?.value === "{" &&  tokens[i].type === "objectStart"){
+                objCount++
+            }
+            else if ( tokens[i]?.value === "}" &&  tokens[i].type === "objectEnd"){
+                objCount--
+            }
+            tempTokens.push(tokens[i])
+            i++
+        }
+        declarator1.setInit(parseObject(tempTokens))
+        i--
     }
     //    else if (tokens[i]?.type === 'string') {
     //        init = new StringLiteral(tokens[i].value)
@@ -216,6 +239,7 @@ export const generateAst = (tokens) => {
     let variables = []
     let scope = [ast]
     while (i < tokens.length) {
+        console.log(tokens[i])
         if (tokens[i].value === '[') {
             // agr nested array ho to ...
             let arr = new ArrayExpression()
@@ -507,22 +531,22 @@ export const generateAst = (tokens) => {
     return ast
 }
 
-//const generatedTokens = tokenize(code)
+const generatedTokens = tokenize(code)
 
-//let ast1 = generateAst(generatedTokens)
+let ast1 = generateAst(generatedTokens)
 
-//fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
-//    if (err) {
-//        console.error(err)
-//    }
-//})
+fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
+    if (err) {
+        console.error(err)
+    }
+})
 
 //console.log('\n\n\n')
-//console.log('Input')
-//console.log(code)
-//console.log('\n')
-//console.log('Output')
-//console.log(generate.default(ast1).code)
+console.log('Input')
+console.log(code)
+console.log('\n')
+console.log('Output')
+console.log(generate.default(ast1).code)
 //console.log('\n\n\n')
 
 //fun print(name,date){

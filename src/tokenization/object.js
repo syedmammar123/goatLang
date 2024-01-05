@@ -1,26 +1,66 @@
-import generate from '@babel/generator'
+import generate from "@babel/generator";
 
-function createAST(tokens) {
+export const identifyToken = (stack,object) => {
+
+      switch(object.type){
+        case 'identifier':
+            return {
+                type: "Identifier",
+                name: object.value,
+              }
+            break;
+        case 'string':
+            return {
+                type: "StringLiteral",
+                value: object.value,
+              }
+            break;
+        case 'Number':
+            return {
+                type: "NumericLiteral",
+                value: object.value,
+              }
+            break;
+        case 'boolean':
+            return {
+                type: "BooleanLiteral",
+                value: object.value === "true" ? true : false,
+              }
+            break;
+        default:
+            return {
+                type: object.type,
+                value: object.value,
+              }
+            break;
+      }
+
+    
+}
+
+
+
+export function parseObject(tokens) {
   const stack = [];
   let current = 0;
 
   while (current < tokens.length) {
     const token = tokens[current];
 
-    if (token.type === "Identifier") {
+    if (token.type === "identifier") {
       stack.push({
         type: "Identifier",
         name: token.value,
       });
       
-    }else if(token.type === "NumericLiteral"){
+    }else if(token.type === "Number"){
       stack.push({
         type: "NumericLiteral",
         name: token.value,
       });
     } 
     else if (token.type === "colon") {
-      if (tokens[current + 1].type == "arrayStart") {
+      if (tokens[current + 1].type == "openening_squarly") {
         current += 2;
         let property = {
           type: "ObjectProperty",
@@ -31,19 +71,13 @@ function createAST(tokens) {
           },
         };
 
-        while (tokens[current].type !== "arrayEnd") {
+        while (tokens[current].type !== "closing_squarly") {
           if (tokens[current].type === "comma") {
             current++;
           } else {
-            tokens[current].type === "Identifier"
-              ? property.value.elements.push({
-                  type: tokens[current].type,
-                  name: tokens[current].value,
-                })
-              : property.value.elements.push({
-                  type: tokens[current].type,
-                  value: tokens[current].value,
-                });
+                let arrayElement = identifyToken(stack,tokens[current])
+                property.value.elements.push(arrayElement)
+
             current++;
           }
         }
@@ -68,47 +102,32 @@ function createAST(tokens) {
           ) {
             current++;
           } else {
-            property.value.properties.push({
-              type: "ObjectProperty",
-              key: {
-                type: tokens[current].type,
-                name: tokens[current].value,
-              },
-              value:
-                tokens[current].type === "Identifier"
-                  ? {
-                      type: tokens[current + 2].type,
-                      name: tokens[current + 2].value,
-                    }
-                  : {
-                      type: tokens[current + 2].type,
-                      value: tokens[current + 2].value,
-                    },
-            });
+            let objectProperty = {
+              type: "ObjectProperty"
+            }
+            let objectKey = identifyToken(stack,tokens[current])
+            let objectValue = identifyToken(stack,tokens[current + 2])
+            objectProperty.key = objectKey
+            objectProperty.value = objectValue
+            property.value.properties.push(objectProperty)
             current += 3;
           }
         }
         current++
         stack[0].right.properties.push(property);
+       
       } else {
         let property = {
           type: "ObjectProperty",
           key: stack.pop(),
-          value:
-            tokens[current+1].type == "Identifier"
-              ? {
-                  type: tokens[current + 1].type,
-                  name: tokens[current + 1].value,
-                }
-              : {
-                  type: tokens[current + 1].type,
-                  value: tokens[current + 1].value,
-                },
+          value:{}
         };
+         property.value = identifyToken(stack,tokens[current+1])
         stack[0].right.properties.push(property);
         current += 2;
       }
-    } else if (token.type === "equals") {
+    } 
+    else if (token.type === "equals") {
       current++;
       const assignmentExpression = {
         type: "AssignmentExpression",
@@ -123,15 +142,15 @@ function createAST(tokens) {
     } else if (token.type === "objectEnd" || token.type === "comma") {
       current++;
     } else {
-      throw new Error(`(last else) Unexpected token: ${current} ${token.type}`);
+      throw new Error(`(last else) Unexpected token: ${token.type} at position: ${current} `);
     }
 
     current++;
   }
 
-  // if (stack.length !== 1) {
-  //   throw new Error("Invalid expression");
-  // }
+  if (stack.length !== 1) {
+    throw new Error("Invalid expression");
+  }
 
   const ast = {
     type: "File",
@@ -146,67 +165,106 @@ function createAST(tokens) {
     },
   };
 
-console.log(generate.default(ast).code)
+  return ast.program.body[0].expression.right
+
+  // console.log(JSON.stringify(ast.program.body[0].expression.right, null, 2));
 
   // return ast;
 }
 
 // Example usage:
-const tokens = [
-  { type: "Identifier", value: "object" },
-  { type: "equals", value: "=" },
-  { type: "objectStart", value: "{" },
-  { type: "Identifier", value: "name" },
-  { type: "colon", value: ":" },
-  { type: "StringLiteral", value: "hassan" },
-  { type: "comma", value: "," },
-  { type: "Identifier", value: "age" },
-  { type: "colon", value: ":" },
-  { type: "NumericLiteral", value: 21 },
-  { type: "comma", value: "," },
-  { type: "Identifier", value: "friends" },
-  { type: "colon", value: ":" },
-  { type: "NullLiteral", value: "null" },
-  { type: "comma", value: "," },
-  { type: "Identifier", value: "achievements" },
-  { type: "colon", value: ":" },
-  { type: "Identifier", value: "undefined" },
-  { type: "comma", value: "," },
-  { type: "Identifier", value: "hobbies" },
-  { type: "colon", value: ":" },
-  { type: "arrayStart", value: "[" },
-  { type: "StringLiteral", value: "coding" },
-  { type: "comma", value: "," },
-  { type: "NumericLiteral", value: "failing" },
-  { type: "comma", value: "," },
-  { type: "StringLiteral", value: "succeeding" },
-  { type: "arrayEnd", value: "]" },
-  { type: "comma", value: "," },
-  { type: "Identifier", value: "address" },
-  { type: "colon", value: ":" },
-  { type: "objectStart", value: "{" },
-  { type: "Identifier", value: "country" },
-  { type: "colon", value: ":" },
-  { type: "StringLiteral", value: "Pakistan" },
-  { type: "comma", value: "," },
-  { type: "Identifier", value: "city" },
-  { type: "colon", value: ":" },
-  { type: "StringLiteral", value: "Karachi" },
-  { type: "objectEnd", value: "}" },
-  { type: "comma", value: "," },
-  { type: "NumericLiteral", value: 123 },
-  { type: "colon", value: ":" },
-  { type: "StringLiteral", value: "numbers" },
-  { type: "comma", value: "," },
-  { type: "Identifier", value: "cool" },
-  { type: "colon", value: ":" },
-  { type: "BooleanLiteral", value: false },
-  { type: "objectEnd", value: "}" },
-];
+// const tokens = [
+//   { type: "objectStart", value: "{" },
+//   { type: "identifier", value: "name" },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "hassan" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "age" },
+//   { type: "colon", value: ":" },
+//   { type: "Number", value: 21 },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "friends" },
+//   { type: "colon", value: ":" },
+//   { type: "NullLiteral", value: "null" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "achievements" },
+//   { type: "colon", value: ":" },
+//   { type: "identifier", value: "undefined" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "hobbies" },
+//   { type: "colon", value: ":" },
+//   { type: "openening_squarly", value: "[" },
+//   { type: "string", value: "coding" },
+//   { type: "comma", value: "," },
+//   { type: "string", value: "failing" },
+//   { type: "comma", value: "," },
+//   { type: "string", value: "succeeding" },
+//   { type: "closing_squarly", value: "]" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "address" },
+//   { type: "colon", value: ":" },
+//   { type: "objectStart", value: "{" },
+//   { type: "identifier", value: "country" },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "Pakistan" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "city" },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "Karachi" },
+//   { type: "objectEnd", value: "}" },
+//   { type: "comma", value: "," },
+//   { type: "Number", value: 123 },
+//   { type: "colon", value: ":" },
+//   { type: "string", value: "numbers" },
+//   { type: "comma", value: "," },
+//   { type: "identifier", value: "cool" },
+//   { type: "colon", value: ":" },
+//   { type: "boolean", value: false },
+//   { type: "objectEnd", value: "}" },
+// ];
 
-try {
-  const ast = createAST(tokens);
-  // console.log(JSON.stringify(ast, null, 2));
-} catch (error) {
-  console.error(error.message);
-}
+const tokens = [
+  { type: 'objectStart', value: '{' },
+  { type: 'identifier', value: 'name' },
+  { type: 'colon', value: ':' },
+  { type: 'string', value: 'usman' },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'age' },
+  { type: 'colon', value: ':' },
+  { type: 'Number', value: 20 },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'lol' },
+  { type: 'colon', value: ':' },
+  { type: 'objectStart', value: '{' },
+  { type: 'identifier', value: 'lel' },
+  { type: 'colon', value: ':' },
+  { type: 'string', value: '8' },
+  { type: 'objectEnd', value: '}' },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'is' },
+  { type: 'colon', value: ':' },
+  { type: 'boolean', value: 'false' },
+  { type: 'comma', value: ',' },
+  { type: 'identifier', value: 'arr' },
+  { type: 'colon', value: ':' },
+  { type: 'openening_squarly', value: '[' },
+  { type: 'Number', value: 2 },
+  { type: 'comma', value: ',' },
+  { type: 'Number', value: 3 },
+  { type: 'comma', value: ',' },
+  { type: 'Number', value: 5 },
+  { type: 'closing_squarly', value: ']' },
+  { type: 'objectEnd', value: '}' }
+]
+
+  let declaration =  [
+    { type: "identifier", value: "temp" },
+    { type: "equals", value: "=" }]
+
+//try {
+//  const ast = createAST([...declaration,...tokens]);
+//  console.log(JSON.stringify(ast, null, 2));
+//    console.log(generate.default(ast).code)
+//} catch (error) {
+//  console.error(error.message);
+//}

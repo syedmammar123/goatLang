@@ -2,12 +2,14 @@ import { isValidName, isBoolean } from '../helpers/token-checks.js'
 import { keywords } from '../environment/environment.js'
 import fs from 'fs'
 
-//const code = fs.readFileSync('./code', { encoding: 'utf8' })
+//const code = fs.readFileSync('./code.goat', { encoding: 'utf8' })
+//console.log(code)
 
 export function tokenize(code) {
     let i = 0
     let tokens = []
     let char = ''
+    let functionCount = 0 
 
     while (i < code.length) {
         if (code[i] === '\r' || code[i] === '\n') {
@@ -108,6 +110,13 @@ export function tokenize(code) {
                 throw new Error('Invalid Operator')
             }
         }
+        if (code[i] === ':') {
+            tokens.push({
+                type: 'colon',
+                value: ':',
+            })
+            i++
+        }
         if (code[i] === ';') {
             tokens.push({
                 type: 'semicolon',
@@ -150,20 +159,44 @@ export function tokenize(code) {
             })
             i++
         }
-        if (code[i] === '{') {
+        if (code[i] === '{' && (tokens[tokens.length - 1].value !== "=" && tokens[tokens.length -1 ].value !== ":")) {
+            functionCount++
+            console.log(tokens[tokens.length - 1].value !== "=" && tokens[tokens.length -1 ].value !== ":", functionCount)
             tokens.push({
                 type: 'openening_blockscope',
                 value: '{',
             })
             i++
         }
+                if (code[i] === '{' && (tokens[tokens.length - 1].value === "=" || tokens[tokens.length -1 ].value === ":"  )){
+                    tokens.push({
+                        type: 'objectStart',
+                        value: '{',
+                        })
+                    i++
+                }
         if (code[i] === '}') {
-            tokens.push({
-                type: 'closing_blockscope',
-                value: '}',
-            })
+            if (functionCount === 0){
+                tokens.push({
+                    type: 'objectEnd',
+                    value: '}',
+                    })
+            }
+            if (functionCount !== 0){
+                tokens.push({
+                    type: 'closing_blockscope',
+                    value: '}',
+                    })
+            }
             i++
         }
+//        if (code[i] === '}') {
+//            tokens.push({
+//                type: 'closing_blockscope',
+//                value: '}',
+//            })
+//            i++
+//        }
         if (code[i] === '(') {
             tokens.push({
                 type: 'openeing_parenthesis',

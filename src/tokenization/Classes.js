@@ -189,8 +189,8 @@ export class CallExpression {
 export class MemberExpression {
     constructor() {
         this.type = 'MemberExpression'
-        this.object
-        this.property
+        this.object = null
+        this.property = null
     }
     setObj(obj) {
         this.object = obj
