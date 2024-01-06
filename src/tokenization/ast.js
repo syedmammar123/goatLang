@@ -239,7 +239,6 @@ export const generateAst = (tokens) => {
     let variables = []
     let scope = [ast]
     while (i < tokens.length) {
-        console.log(tokens[i])
         if (tokens[i].value === '[') {
             // agr nested array ho to ...
             let arr = new ArrayExpression()
@@ -265,11 +264,12 @@ export const generateAst = (tokens) => {
 
         if (
             (((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) || // array values ya ksi non declarative ya non assignment statements k lie
-                tokens[i].type === 'Number' ||
-                tokens[i].type === 'string') &&
-                tokens[i + 1].value !== '=') ||
-            (tokens[i + 1].value === '(' && tokens[i]?.type !== "keyword")
+                tokens[i]?.type === 'Number' ||
+                tokens[i]?.type === 'string') &&
+                tokens[i + 1]?.value !== '=') ||
+            (tokens[i + 1]?.value === '(' && tokens[i]?.type !== "keyword")
         ) {
+                console.log(tokens[i],"invoked")
             let expTokens = []
             while (true) {
                 if (
@@ -289,6 +289,7 @@ export const generateAst = (tokens) => {
                 expTokens.push(tokens[i])
                 i++
             }
+                console.log(expTokens,"tokenss",tokens[i])
 
             if (expTokens.length === 1) {
                 scope[scope.length - 1].push(getNode(expTokens[0]))
@@ -310,7 +311,7 @@ export const generateAst = (tokens) => {
             (tokens[i]?.type === 'identifier' &&
                 !variables.includes(tokens[i].value) && // its not already declared
                 !(scope[scope.length - 1] instanceof ArrayExpression) && // checking that current scope array to ni bcs array me initialization nai hoskti
-                !(tokens[i + 1].value === '('))
+                !(tokens[i + 1]?.value === '('))
         ) {
             let targetScope = scope[scope.length - 1]
             let var1 = new VariableDeclaration()
@@ -532,9 +533,9 @@ export const generateAst = (tokens) => {
 }
 
 const generatedTokens = tokenize(code)
-
+console.log(generatedTokens)
 let ast1 = generateAst(generatedTokens)
-
+console.log(JSON.stringify(ast1.body,null,2))
 fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
     if (err) {
         console.error(err)

@@ -4,6 +4,20 @@ import generate, { CodeGenerator } from '@babel/generator'
 import { getNode } from '../helpers/getNode.js'
 import { parseMemberExpression } from './MemberExpressionParsing.js'
 
+
+//const tokens = [
+//      { type: 'identifier', value: 'arr' },
+//  { type: 'access_operator', value: '->' },
+//  { type: 'openeing_parenthesis', value: '(' },
+//  { type: 'identifier', value: 'arr' },
+//  { type: 'dot_operator', value: '.' },
+//  { type: 'identifier', value: 'length' },
+//      { type: 'operator', value: '-' },
+//  { type: 'Number', value: 1 },
+//  { type: 'closing_parenthesis', value: ')' },
+//]
+
+
 //const tokens = [
 //    { type: 'identifier', value: 'n' },
 //    { type: 'operator', value: '*' },
@@ -139,6 +153,7 @@ export function parseLogicalExpression(tokens) {
             return parseMemberExpression(tokens, 0)
         }
     }
+    console.log("notttttt",tokens)
 
     if (tokens[0]?.value === '(' && tokens[tokens.length - 1]?.value === ')') {
         tokens.pop()
@@ -194,6 +209,7 @@ export function parseLogicalExpression(tokens) {
             }
         }
     }
+
 
     let exp = new BinaryExpression()
     if (idx) {

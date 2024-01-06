@@ -11,12 +11,6 @@ import { getNode } from '../helpers/getNode.js'
 //    { type: 'closing_parenthesis', value: ')' },
 //]
 //
-//const tokens = [
-//  { type: 'identifier', value: 'print' },
-//  { type: 'openeing_parenthesis', value: '(' },
-//  { type: 'identifier', value: 'name' },
-//  { type: 'closing_parenthesis', value: ')' }
-//]
 
 function parseArguments(tokens, i) {
     let paranCount = 1
@@ -62,12 +56,28 @@ export function parseMemberExpression(tokens, i) {
             callExp.pushArg(...args)
             currExp.setExpression(callExp)
         }
-        if (tokens[i]?.value === '.') {
+        if (tokens[i]?.value === '.' || tokens[i]?.value === "->") {
+            i++
+            if (tokens[i]?.value === "(" && tokens[i]?.type === "openeing_parenthesis" ){
+                i++
+                let tempTokens = []
+                while (tokens[i]?.value !== ")" && tokens[i]?.type !== "closing_parenthesis"){
+                    tempTokens.push(tokens[i])
+                i++
+            }
             let memberExp = new MemberExpression()
             memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
-            i++
+            tempTokens.length === 1 ? memberExp.setProperty(getNode(tempTokens[0])) : memberExp.setProperty(parseMemberExpression(tempTokens,0))
+            memberExp.computed = true
+            currExp.setExpression(memberExp)
+            }
+                else{
+
+            let memberExp = new MemberExpression()
+            memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
             memberExp.setProperty(getNode(tokens[i]))
             currExp.setExpression(memberExp)
+                }
         }
         i++
     }
@@ -75,5 +85,6 @@ export function parseMemberExpression(tokens, i) {
 }
 
 //const ast = parseMemberExpression(tokens, 0)
+//console.log(JSON.stringify(ast,null,2))
 //console.log(ast)
 //console.log(generate.default(ast).code)

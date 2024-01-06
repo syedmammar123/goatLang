@@ -62,7 +62,15 @@ export function tokenize(code) {
             })
             i++
         }
-        if (code[i] === '-') {
+        if (code[i] === "-" && code[i+1] === ">"){
+            i++ 
+                tokens.push({
+                    type: 'access_operator',
+                    value: '->',
+                })
+            i++
+        }
+        if (code[i] === '-' && code[i+1] !== ">") {
             let temp = ''
 
             while (code[i] === '-') {
@@ -325,6 +333,7 @@ export function tokenize(code) {
                     throw new Error('Invalid number')
                 }
                 num = num + code[i]
+                console.log(code[i])
                 i++
             }
             tokens.push({
