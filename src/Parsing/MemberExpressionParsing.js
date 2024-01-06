@@ -56,28 +56,28 @@ export function parseMemberExpression(tokens, i) {
             callExp.pushArg(...args)
             currExp.setExpression(callExp)
         }
-        if (tokens[i]?.value === '.' || tokens[i]?.value === "->") {
+        if (tokens[i]?.value === '.' || tokens[i]?.value === '->') {
             i++
-            if (tokens[i]?.value === "(" && tokens[i]?.type === "openeing_parenthesis" ){
+            if (tokens[i]?.value === '(' && tokens[i]?.type === 'openeing_parenthesis') {
                 i++
                 let tempTokens = []
-                while (tokens[i]?.value !== ")" && tokens[i]?.type !== "closing_parenthesis"){
+                while (tokens[i]?.value !== ')' && tokens[i]?.type !== 'closing_parenthesis') {
                     tempTokens.push(tokens[i])
-                i++
-            }
-            let memberExp = new MemberExpression()
-            memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
-            tempTokens.length === 1 ? memberExp.setProperty(getNode(tempTokens[0])) : memberExp.setProperty(parseMemberExpression(tempTokens,0))
-            memberExp.computed = true
-            currExp.setExpression(memberExp)
-            }
-                else{
-
-            let memberExp = new MemberExpression()
-            memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
-            memberExp.setProperty(getNode(tokens[i]))
-            currExp.setExpression(memberExp)
+                    i++
                 }
+                let memberExp = new MemberExpression()
+                memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
+                tempTokens.length === 1
+                    ? memberExp.setProperty(getNode(tempTokens[0]))
+                    : memberExp.setProperty(parseMemberExpression(tempTokens, 0))
+                memberExp.computed = true
+                currExp.setExpression(memberExp)
+            } else {
+                let memberExp = new MemberExpression()
+                memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
+                memberExp.setProperty(getNode(tokens[i]))
+                currExp.setExpression(memberExp)
+            }
         }
         i++
     }

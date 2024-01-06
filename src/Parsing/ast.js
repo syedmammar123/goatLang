@@ -2,10 +2,7 @@ import generate from '@babel/generator'
 import fs from 'fs'
 import {
     ForStatement,
-    ForLoopStepBinaryExpression,
     BinaryExpParserForLoop,
-    ObjectProperty,
-    ObjectExpression,
     AssignmentExpression,
     ReturnStatement,
     IfStatement,
@@ -17,16 +14,14 @@ import {
     VariableDeclarator,
     Identifier,
     ExpressionStatement,
-    CallExpression,
 } from './Classes.js'
-import { tokenize } from './tokenize.js'
+import { tokenize } from '../tokenization/tokenize.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
 import { getNode } from '../helpers/getNode.js'
 import { keywords } from '../environment/environment.js'
 import { parseObject } from './object.js'
-import exp from 'constants'
 
-const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/tokenization/code.goat', { encoding: 'utf8' })
+const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
 
 function parseVariables(tokens, i, scope) {
     let declarator1 = new VariableDeclarator()
@@ -42,21 +37,19 @@ function parseVariables(tokens, i, scope) {
         init = new ArrayExpression()
         scope.push(init)
         declarator1.setInit(init)
-    }
-    else if (tokens[i].value === "{" || tokens[i].type === "objectStart"){
+    } else if (tokens[i].value === '{' || tokens[i].type === 'objectStart') {
         let tempTokens = [
-    { type: "identifier", value: "temp" },
-    { type: "equals", value: "=" }
-]
+            { type: 'identifier', value: 'temp' },
+            { type: 'equals', value: '=' },
+        ]
         tempTokens.push(tokens[i])
         i++
         let objCount = 1
-        while (objCount !== 0){
+        while (objCount !== 0) {
             console.log(tokens[i])
-            if ( tokens[i]?.value === "{" &&  tokens[i].type === "objectStart"){
+            if (tokens[i]?.value === '{' && tokens[i].type === 'objectStart') {
                 objCount++
-            }
-            else if ( tokens[i]?.value === "}" &&  tokens[i].type === "objectEnd"){
+            } else if (tokens[i]?.value === '}' && tokens[i].type === 'objectEnd') {
                 objCount--
             }
             tempTokens.push(tokens[i])
@@ -267,9 +260,9 @@ export const generateAst = (tokens) => {
                 tokens[i]?.type === 'Number' ||
                 tokens[i]?.type === 'string') &&
                 tokens[i + 1]?.value !== '=') ||
-            (tokens[i + 1]?.value === '(' && tokens[i]?.type !== "keyword")
+            (tokens[i + 1]?.value === '(' && tokens[i]?.type !== 'keyword')
         ) {
-                console.log(tokens[i],"invoked")
+            console.log(tokens[i], 'invoked')
             let expTokens = []
             while (true) {
                 if (
@@ -289,7 +282,7 @@ export const generateAst = (tokens) => {
                 expTokens.push(tokens[i])
                 i++
             }
-                console.log(expTokens,"tokenss",tokens[i])
+            console.log(expTokens, 'tokenss', tokens[i])
 
             if (expTokens.length === 1) {
                 scope[scope.length - 1].push(getNode(expTokens[0]))
@@ -356,35 +349,34 @@ export const generateAst = (tokens) => {
             i = parseIfStatements(tokens, i, scope[scope.length - 1], scope, false, true)
             i++
         }
-        if (tokens[i]?.type === "keyword" && tokens[i]?.value === "display"){
+        if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'display') {
             i++
-            if (tokens[i]?.type !== "opening_paran" && tokens[i]?.value !== "("){
-                throw new Error("Expected arguments after display statement. ")
+            if (tokens[i]?.type !== 'opening_paran' && tokens[i]?.value !== '(') {
+                throw new Error('Expected arguments after display statement. ')
             }
-            
-                let tempTokens = [
-  { type: 'identifier', value: 'console' },
-  { type: 'dot_operator', value: '.' },
-  { type: 'identifier', value: 'log' },
-  { type: 'openeing_parenthesis', value: '(' },
-                ]
-    let paranCount = 1
-                i++
-    while (tokens[i].value !== ')' && paranCount !== 0) {
-                if (tokens[i].value === ")"){
-            paranCount--
-        }
-            else if (tokens[i].value === "("){
-            paranCount++
-        }else if (tokens[i].value === ","){
+
+            let tempTokens = [
+                { type: 'identifier', value: 'console' },
+                { type: 'dot_operator', value: '.' },
+                { type: 'identifier', value: 'log' },
+                { type: 'openeing_parenthesis', value: '(' },
+            ]
+            let paranCount = 1
             i++
-        }
+            while (tokens[i].value !== ')' && paranCount !== 0) {
+                if (tokens[i].value === ')') {
+                    paranCount--
+                } else if (tokens[i].value === '(') {
+                    paranCount++
+                } else if (tokens[i].value === ',') {
+                    i++
+                }
+                tempTokens.push(tokens[i])
+                i++
+            }
             tempTokens.push(tokens[i])
-        i++
-    }
-      tempTokens.push(tokens[i])
-      i++
-           scope[scope.length - 1].push(parseLogicalExpression(tempTokens))
+            i++
+            scope[scope.length - 1].push(parseLogicalExpression(tempTokens))
         }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'return') {
             const returnStat = new ReturnStatement()
@@ -535,7 +527,7 @@ export const generateAst = (tokens) => {
 const generatedTokens = tokenize(code)
 console.log(generatedTokens)
 let ast1 = generateAst(generatedTokens)
-console.log(JSON.stringify(ast1.body,null,2))
+console.log(JSON.stringify(ast1.body, null, 2))
 fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
     if (err) {
         console.error(err)

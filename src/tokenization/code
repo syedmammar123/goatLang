@@ -1,4 +1,0 @@
-    const a = 200
-    display(a + 10)
-
-
