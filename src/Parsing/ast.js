@@ -1,230 +1,23 @@
 import generate from '@babel/generator'
 import fs from 'fs'
-import {
-    ForStatement,
-    BinaryExpParserForLoop,
-    AssignmentExpression,
-    ReturnStatement,
-    IfStatement,
-    ArrayExpression,
-    BlockStatement,
-    FunctionDeclaration,
-    Program,
-    VariableDeclaration,
-    VariableDeclarator,
-    Identifier,
-    ExpressionStatement,
-} from './Classes.js'
+import { parseForLoop } from './ParseForLoop.js'
+import { parseFunction } from './ParseFunctions.js'
+import { parseAssignmentExpressions } from './ParseAssignmentExpressions.js'
+import { parseVariables } from './ParseVariables.js'
+import { parseIfStatements } from './ParseConditionalStatements.js'
 import { tokenize } from '../tokenization/tokenize.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
 import { getNode } from '../helpers/getNode.js'
 import { keywords } from '../environment/environment.js'
-import { parseObject } from './object.js'
+import {
+    ReturnStatement,
+    ArrayExpression,
+    Program,
+    VariableDeclaration,
+    ExpressionStatement,
+} from './Classes.js'
 
 const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
-
-function parseVariables(tokens, i, scope) {
-    let declarator1 = new VariableDeclarator()
-    let id1 = new Identifier(tokens[i].value)
-    declarator1.setId(id1)
-    i++
-    if (tokens[i]?.value !== '=') {
-        throw new Error('expected =')
-    }
-    i++
-    let init
-    if (tokens[i].value === '[') {
-        init = new ArrayExpression()
-        scope.push(init)
-        declarator1.setInit(init)
-    } else if (tokens[i].value === '{' || tokens[i].type === 'objectStart') {
-        let tempTokens = [
-            { type: 'identifier', value: 'temp' },
-            { type: 'equals', value: '=' },
-        ]
-        tempTokens.push(tokens[i])
-        i++
-        let objCount = 1
-        while (objCount !== 0) {
-            console.log(tokens[i])
-            if (tokens[i]?.value === '{' && tokens[i].type === 'objectStart') {
-                objCount++
-            } else if (tokens[i]?.value === '}' && tokens[i].type === 'objectEnd') {
-                objCount--
-            }
-            tempTokens.push(tokens[i])
-            i++
-        }
-        declarator1.setInit(parseObject(tempTokens))
-        i--
-    }
-    //    else if (tokens[i]?.type === 'string') {
-    //        init = new StringLiteral(tokens[i].value)
-    //    declarator1.setInit(init)
-    //    } else if (tokens[i]?.type === 'Number') {
-    //        init = new NumericLiteral(tokens[i].value)
-    //    declarator1.setInit(init)
-    //    }
-    else if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
-        i = parseFunction(tokens, i, declarator1, scope, true, 'setInit')
-        i++
-    } else {
-        let expTokens = []
-        while (true) {
-            if (
-                ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
-                    expTokens[expTokens.length - 1]?.type === 'string' ||
-                    expTokens[expTokens.length - 1]?.type === 'Number') &&
-                    (tokens[i]?.type === 'identifier' ||
-                        tokens[i]?.type === 'string' ||
-                        tokens[i]?.type === 'Number' ||
-                        keywords?.includes(tokens[i]?.value))) ||
-                tokens.length <= i ||
-                tokens[i].value === '}'
-            ) {
-                break
-            }
-            expTokens.push(tokens[i])
-            i++
-        }
-        if (expTokens.length === 1) {
-            declarator1.setInit(getNode(expTokens[0]))
-        } else {
-            declarator1.setInit(parseLogicalExpression(expTokens))
-        }
-        i--
-    }
-
-    return [declarator1, i]
-}
-
-function parseFunction(tokens, i, destScope, scope, isAssigned, setter) {
-    const fun = new FunctionDeclaration()
-    if (isAssigned) {
-        destScope[setter](fun)
-    } else {
-        destScope.push(fun) // ye wo scope hai jahan function declare hoga
-    }
-    i++
-    const id = new Identifier(tokens[i].value)
-    fun.setId(id)
-    i++
-    if (tokens[i].value !== '(') {
-        throw new Error('( expected')
-    }
-    i++
-    let paramCount = 0
-    while (tokens[i].value !== ')') {
-        if (tokens[i].type === 'identifier') {
-            fun.pushParams(new Identifier(tokens[i].value))
-        }
-        if (paramCount > 1000000) {
-            throw new Error(') missing!')
-        }
-        i++
-        paramCount++
-    }
-
-    i++
-    if (tokens[i].type === 'openening_blockscope' && tokens[i].value === '{') {
-        let blockStatement = new BlockStatement()
-        blockStatement.params = fun.params.map((param) => param?.name ?? param.name)
-        fun.setScope(blockStatement)
-        scope.push(blockStatement) // ye is function ka apna scope hai
-    }
-    return i
-}
-
-function getCurrentIf(parentIf) {
-    if (!parentIf?.alternate) {
-        return parentIf
-    }
-
-    return getCurrentIf(parentIf.alternate)
-}
-
-function parseIfStatements(tokens, i, currScope, scope, elf, isElse) {
-    if (isElse) {
-        i++
-        let blockStatement = new BlockStatement()
-        let currIf = getCurrentIf(currScope.body[currScope.body.length - 1])
-        currIf.setAlternate(blockStatement)
-        scope.push(currIf.alternate)
-        return i
-    }
-    let ifStat = new IfStatement()
-    if (elf) {
-        let currIf = getCurrentIf(currScope.body[currScope.body.length - 1])
-        currIf.setAlternate(ifStat)
-    } else {
-        currScope.push(ifStat) // ye wo scope hai jahan if declare hoga
-    }
-    i++
-    if (tokens[i]?.value !== '(') {
-        throw new Error('Expected (')
-    }
-    i++
-    let testTokens = []
-    while (tokens[i].value !== '{') {
-        testTokens.push(tokens[i])
-        i++
-    }
-    testTokens.pop()
-    ifStat.setTest(parseLogicalExpression(testTokens))
-
-    if (tokens[i].type === 'openening_blockscope' && tokens[i].value === '{') {
-        let blockStatement = new BlockStatement()
-        ifStat.setConsequent(blockStatement)
-        scope.push(ifStat.consequent) // ye is if ka apna scope hai
-    }
-    return i
-}
-
-function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
-    const assignmentExp = new AssignmentExpression()
-    parent[setter](assignmentExp)
-    assignmentExp.setLeft(getNode(tokens[i]))
-    i++
-    if (tokens[i]?.value !== '=') {
-        throw new Error('= exprected.')
-    }
-    i++
-    if (tokens[i].value === '[') {
-        // agr assigned value array ho to
-        let arr = new ArrayExpression()
-        assignmentExp.setRight(arr) // array ko current scope me add kia
-        scope.push(arr) // array ko current scope bnaya so that next sare elements ushi array me add hon
-        i++
-    } else if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
-        i = parseFunction(tokens, i, assignmentExp, scope, true, 'setRight')
-        i++
-    } else {
-        let expTokens = []
-        while (true) {
-            if (
-                ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
-                    expTokens[expTokens.length - 1]?.type === 'string' ||
-                    expTokens[expTokens.length - 1]?.type === 'Number') &&
-                    (tokens[i]?.type === 'identifier' ||
-                        tokens[i]?.type === 'string' ||
-                        tokens[i]?.type === 'Number' ||
-                        keywords?.includes(tokens[i]?.value))) ||
-                tokens.length <= i
-            ) {
-                break
-            }
-            expTokens.push(tokens[i])
-            i++
-        }
-        if (expTokens.length === 1) {
-            assignmentExp.setRight(getNode(expTokens[0]))
-        } else {
-            assignmentExp.setRight(parseLogicalExpression(expTokens))
-        }
-    }
-
-    return i
-}
 
 export const generateAst = (tokens) => {
     let i = 0
@@ -439,77 +232,7 @@ export const generateAst = (tokens) => {
         }
 
         if (tokens[i]?.value === 'for') {
-            let forStatement = new ForStatement()
-            i++
-
-            if (tokens[i]?.type === 'identifier') {
-                let init = new AssignmentExpression()
-                let left = new Identifier(tokens[i]?.value)
-                let right
-
-                i++ // Move to the next token
-
-                if (tokens[i]?.value !== 'from') {
-                    throw new Error('Expected "from" after loop initialization.')
-                }
-
-                i++ // Move to the numeric value
-                if (tokens[i]?.type === 'Number') {
-                    right = getNode(tokens[i])
-                    i++
-                } else {
-                    throw new Error('Expected a number after from keyword')
-                }
-
-                init.setLeft(left)
-                init.setRight(right)
-                forStatement.setInit(init)
-            } else {
-                throw new Error('Expected an identifier for loop initialization.')
-            }
-
-            // Parse condition with binary expression support
-
-            if (tokens[i]?.value !== 'to') {
-                throw new Error('Expected "to" after loop initialization value.')
-            } else {
-                i++
-                let cond = checkCond(forStatement.init.right.value, tokens[i]?.value)
-                let _oper = cond ? '<' : '>'
-                let conditionValue = BinaryExpParserForLoop.parse(tokens, i, _oper, forStatement.init.left, '')
-                forStatement.setTest(conditionValue)
-                i++
-            }
-
-            if (tokens[i]?.value !== 'by') {
-                throw new Error('Expected "by" after loop condition.')
-            }
-
-            // Parse update with binary expression support
-            i++
-            let updateValue
-            if (tokens[i]?.type == 'operator') {
-                updateValue = BinaryExpParserForLoop.parse(tokens, i + 1, '=', forStatement.init.left, tokens[i].value)
-                i++
-            } else if (tokens[i]?.type == 'Number') {
-                let step = checkStep(tokens[i]?.value, forStatement.init.right.value, forStatement.test.right.value)
-
-                updateValue = BinaryExpParserForLoop.parse(tokens, i, '=', forStatement.init.left, step)
-            }
-
-            forStatement.setUpdate(updateValue)
-
-            i++
-            if (tokens[i]?.type === 'openening_blockscope' && tokens[i]?.value === '{') {
-                i++
-                let body = new BlockStatement()
-                forStatement.setBody(body)
-                scope.push(body)
-            } else {
-                throw new Error('Expected "{" to start the loop body.')
-            }
-
-            ast.push(forStatement)
+            i = parseForLoop(tokens, i ,scope)
         }
 
         if (tokens[i]?.value === '}' && tokens[i]?.type === 'closing_blockscope') {
@@ -528,45 +251,14 @@ const generatedTokens = tokenize(code)
 console.log(generatedTokens)
 let ast1 = generateAst(generatedTokens)
 console.log(JSON.stringify(ast1.body, null, 2))
-fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
-    if (err) {
-        console.error(err)
-    }
-})
+//fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
+//    if (err) {
+//        console.error(err)
+//    }
+//})
 
-//console.log('\n\n\n')
 console.log('Input')
 console.log(code)
 console.log('\n')
 console.log('Output')
 console.log(generate.default(ast1).code)
-//console.log('\n\n\n')
-
-//fun print(name,date){
-//     a = 'Hello world'
-//     fun hello(dob){
-//        global const b = 329
-//        global const v = 329
-//        c = 999
-//     }
-//}
-//
-
-function checkCond(startval, endval) {
-    return startval < endval
-}
-function checkStep(_step, start, end) {
-    if (_step > 0) {
-        if (start < end) {
-            return '+'
-        } else {
-            throw new Error('Starting value must be less than End value')
-        }
-    } else if (_step < 0) {
-        if (start > end) {
-            return '-'
-        } else {
-            throw new Error('Starting value must be greater than End value')
-        }
-    }
-}
