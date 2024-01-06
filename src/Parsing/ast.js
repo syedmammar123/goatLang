@@ -16,11 +16,8 @@ import {
     VariableDeclaration,
     ExpressionStatement,
 } from './Classes.js'
-<<<<<<< HEAD
+
 import { parseUntilLoop } from './ParseUntilLoop.js'
-=======
-import exp from 'constants'
->>>>>>> 7ed5c6ac3658aa21416438680be219b510036fde
 
 const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
 
