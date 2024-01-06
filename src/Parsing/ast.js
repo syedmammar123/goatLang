@@ -16,8 +16,19 @@ import {
     VariableDeclaration,
     ExpressionStatement,
 } from './Classes.js'
+import exp from 'constants'
 
 const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
+
+function isParam(tokens, i,params){
+    if (!params){
+        return
+    }
+    while (tokens[i]?.type !== "identifier"){
+        i++
+    }
+    return params?.includes(tokens[i].value)
+}
 
 export const generateAst = (tokens) => {
     let i = 0
@@ -49,13 +60,12 @@ export const generateAst = (tokens) => {
         }
 
         if (
-            (((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) || // array values ya ksi non declarative ya non assignment statements k lie
+            (((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) || // array values ya ksi non declarative ya non assignment statements k lev
                 tokens[i]?.type === 'Number' ||
                 tokens[i]?.type === 'string') &&
                 tokens[i + 1]?.value !== '=') ||
-            (tokens[i + 1]?.value === '(' && tokens[i]?.type !== 'keyword')
+            (tokens[i + 1]?.value === '(' && tokens[i]?.type !== 'keyword') 
         ) {
-            console.log(tokens[i], 'invoked')
             let expTokens = []
             while (true) {
                 if (
@@ -68,15 +78,14 @@ export const generateAst = (tokens) => {
                             keywords?.includes(tokens[i]?.value))) ||
                     tokens.length <= i ||
                     tokens[i].value === ']' ||
-                    tokens[i].value === ','
+                    tokens[i].value === ',' || 
+                tokens[i].value === "}"
                 ) {
                     break
                 }
                 expTokens.push(tokens[i])
                 i++
             }
-            console.log(expTokens, 'tokenss', tokens[i])
-
             if (expTokens.length === 1) {
                 scope[scope.length - 1].push(getNode(expTokens[0]))
             } else {
@@ -84,20 +93,22 @@ export const generateAst = (tokens) => {
             }
         }
 
-        if (tokens[i]?.type === 'identifier' && variables.includes(tokens[i]?.value) && tokens[i + 1]?.value === '=') {
+        if (((tokens[i]?.type === 'identifier' && variables.includes(tokens[i]?.value)) ||(isParam(tokens, i, scope[scope.length - 1].params))) && tokens[i + 1]?.value === '=' ) {
+                
             // assignment expression k lie
             const expressionExp = new ExpressionStatement()
             scope[scope.length - 1].push(expressionExp)
             i = parseAssignmentExpressions(tokens, i, scope, 'setExpression', expressionExp)
         }
-
+        console.log(tokens[i])
         if (
             tokens[i]?.value === 'global' ||
             tokens[i]?.value === 'const' ||
             (tokens[i]?.type === 'identifier' &&
                 !variables.includes(tokens[i].value) && // its not already declared
                 !(scope[scope.length - 1] instanceof ArrayExpression) && // checking that current scope array to ni bcs array me initialization nai hoskti
-                !(tokens[i + 1]?.value === '('))
+                !(tokens[i + 1]?.value === '(') &&
+                !(isParam(tokens,i,scope[scope.length - 1]?.params)))
         ) {
             let targetScope = scope[scope.length - 1]
             let var1 = new VariableDeclaration()
@@ -250,7 +261,7 @@ export const generateAst = (tokens) => {
 const generatedTokens = tokenize(code)
 console.log(generatedTokens)
 let ast1 = generateAst(generatedTokens)
-console.log(JSON.stringify(ast1.body, null, 2))
+//console.log(JSON.stringify(ast1.body, null, 2))
 //fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
 //    if (err) {
 //        console.error(err)

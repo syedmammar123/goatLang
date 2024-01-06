@@ -31,6 +31,7 @@ export function parseFunction(tokens, i, destScope, scope, isAssigned, setter) {
         i++
         paramCount++
     }
+        console.log(fun.params)
 
     i++
     if (tokens[i].type === 'openening_blockscope' && tokens[i].value === '{') {
