@@ -338,4 +338,20 @@ export class ForStatement {
     setBody(body) {
         this.body = body
     }
+
 }
+
+export class WhileStatement{
+     constructor(){
+        this.type="WhileStatement";
+        this.test={};
+        this.body={};
+    }
+    setTest(test){
+        this.test = test;
+    }
+    setBody(body){
+        this.body = body;
+    }
+}
+

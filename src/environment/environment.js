@@ -11,5 +11,5 @@ export const keywords = [
     'display',
     'return',
     'fun',
-    'while',
+    'until',
 ]

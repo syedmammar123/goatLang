@@ -16,9 +16,10 @@ import {
     VariableDeclaration,
     ExpressionStatement,
 } from './Classes.js'
-import exp from 'constants'
 
-const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
+import { parseUntilLoop } from './ParseUntilLoop.js'
+
+const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
 
 function isParam(tokens, i,params){
     if (!params){
@@ -137,6 +138,10 @@ export const generateAst = (tokens) => {
             }
             i++
         }
+        if (tokens[i]?.type === "keyword" && tokens[i]?.value === "until") {
+            i = parseUntilLoop(tokens, i, scope[scope.length - 1], scope);
+            i++;
+        }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
             i = parseFunction(tokens, i, scope[scope.length - 1], scope)
             i++
@@ -229,6 +234,7 @@ export const generateAst = (tokens) => {
                     returnStat.setArgument(parseLogicalExpression(expTokens))
                 }
             }
+            
             if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
                 i = parseFunction(tokens, i, returnStat, scope, true, 'setArgument')
                 i++
