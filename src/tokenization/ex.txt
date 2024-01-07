@@ -1,0 +1,212 @@
+arr = [234,'hello',8888,[3,[4,5,['hello']]], fun printName()
+{
+        b = 0
+}
+]
+
+
+fun print(name,date){
+     a = 'Hello world'
+     fun hello(dob){
+        global const b = 329
+        global const v = 329
+        c = 999
+     }
+}
+
+if ((k < j && i === l) && i == u || t < p && w===o){
+}
+if (2){
+    if (6){
+
+    }elf (69){
+
+    }else{
+
+    }
+}
+elf(0){
+
+}
+else{
+
+}
+fun print(name){
+
+}
+a = 4
+b = 3
+
+temp = 0
+
+temp = a + 1
+a = b
+b = a
+temp = 0
+
+temp = a === b > c === b
+
+temp2 = 3
+
+
+
+
+
+
+
+
+
+discarded code
+
+//        if (
+//            tokens[i].type === 'Number' &&
+//            scope[scope.length - 1] instanceof ArrayExpression // numbers ko current scope k array me add krengy
+//        ) {
+//            let temp = new NumericLiteral(tokens[i].value)
+//            scope[scope.length - 1].push(temp)
+//            i++
+//        }
+//        if (
+//            tokens[i].type === 'string' &&
+//            scope[scope.length - 1] instanceof ArrayExpression // same for strings
+//        ) {
+//            let temp = new StringLiteral(tokens[i].value)
+//            scope[scope.length - 1].push(temp)
+//            i++
+//        }
+
+
+//                const assignmentExp = new AssignmentExpression()
+//                assignmentExp.setLeft(getNode(tokens[i]))
+//                returnStat.setArgument(assignmentExp)
+//                i++
+//                i++
+//                let expTokens = []
+//                while (true) {
+//                    if (
+//                        ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
+//                            expTokens[expTokens.length - 1]?.type === 'string' ||
+//                            expTokens[expTokens.length - 1]?.type === 'Number') &&
+//                            (tokens[i]?.type === 'identifier' ||
+//                                tokens[i]?.type === 'string' ||
+//                                tokens[i]?.type === 'Number' ||
+//                                keywords?.includes(tokens[i]?.value))) ||
+//                        tokens.length <= i ||
+//                        tokens[i].value === '}'
+//                    ) {
+//                        break
+//                    }
+//                    expTokens.push(tokens[i])
+//                    i++
+//                }
+//
+//                if (expTokens.length === 1) {
+//                    assignmentExp.setRight(getNode(expTokens[0]))
+//                } else {
+//                    assignmentExp.setRight(parseLogicalExpression(expTokens))
+//                }
+
+
+
+fun print(name){
+const a = 'hello world'
+b = 0
+b = 10 + 3
+
+return a.length === b.length
+}
+c = 0
+c = arr.length.max.get.got.git === 'lol'.length.sum
+
+
+
+export function parseLogicalExpression(tokens) {
+    if (!isItExpressionStatement(tokens)) {
+        if (tokens.length === 1) {
+            return getNode(tokens.pop())
+        } else {
+            return parseMemberExpression(tokens, 0)
+        }
+    }
+
+    if (tokens[0]?.value === '(' && tokens[tokens.length - 1]?.value === ')') {
+        tokens.pop()
+        tokens.shift()
+    }
+
+    let token = tokens.pop()
+
+    let expression = []
+
+    let idx = null
+    let paramCount = 0
+
+    for (let i = tokens.length - 1; i >= 0; i--) {
+        if (tokens[i].value === ')') {
+            paramCount++
+        }
+        if (tokens[i].value === '(') {
+            paramCount--
+        }
+        if ((tokens[i].value === '&&' || tokens[i].value === '||' || tokens[i].value === '===') && paramCount <= 0) {
+            if (!idx) {
+                idx = i
+            } else if (
+                (tokens[idx].value === '&&' && tokens[i].value === '||') ||
+                ((tokens[i].value === '&&' || tokens[i].value === '||') && tokens[idx].value === '===')
+            ) {
+                idx = i
+            }
+        }
+    }
+
+    if (token?.value === ')' && !idx) {
+        let paranCount = 0
+        paranCount++
+        while (paranCount !== 0) {
+            token = tokens.pop()
+            if (token.value === ')') {
+                paranCount++
+            } else if (token.value === '(') {
+                paranCount--
+            }
+            expression.unshift(token)
+        }
+        expression.shift()
+    }
+
+    let exp = new BinaryExpression()
+    if (idx) {
+        exp = new LogicalExpression()
+        let left = tokens.slice(0, idx)
+        let right = [...tokens.slice(idx + 1, tokens.length + 1), token]
+
+        exp.setLeft(parseLogicalExpression(left))
+        exp.setOperator(tokens[idx].value)
+        exp.setRight(parseLogicalExpression(right))
+    } else if (expression.length) {
+        if (!tokens.length) {
+            exp = parseLogicalExpression(expression)
+        } else {
+            exp.setRight(parseLogicalExpression(expression))
+            exp.setOperator(tokens?.pop()?.value)
+            exp.setLeft(parseLogicalExpression(tokens))
+        }
+    } else {
+        exp.setRight(getNode(token))
+        exp.setOperator(tokens?.pop()?.value)
+        exp.setLeft(parseLogicalExpression(tokens))
+    }
+    return exp
+}
+
+fun fibonacci(n){
+    if (n === 1){
+        return 1
+    }
+    
+
+    return fibonacci(n + 1) + fibonacci( n + 2)
+}
+
+
