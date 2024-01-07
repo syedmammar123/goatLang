@@ -126,10 +126,10 @@ export function tokenize(code) {
             i++
         }
         if (code[i] === ';') {
-            tokens.push({
-                type: 'semicolon',
-                value: ';',
-            })
+            // tokens.push({
+            //     type: 'semicolon',
+            //     value: ';',
+            // })
             i++
         }
         if (code[i] === '.') {
