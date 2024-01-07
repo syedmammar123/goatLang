@@ -186,7 +186,7 @@ export function tokenize(code) {
         if (code[i] === '>') {
             tokens.push({
                 type: 'greater_than',
-                value: '<',
+                value: '>',
             })
             i++
         }

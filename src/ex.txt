@@ -5,14 +5,6 @@ arr = [234,'hello',8888,[3,[4,5,['hello']]], fun printName()
 ]
 
 
-fun print(name,date){
-     a = 'Hello world'
-     fun hello(dob){
-        global const b = 329
-        global const v = 329
-        c = 999
-     }
-}
 
 if ((k < j && i === l) && i == u || t < p && w===o){
 }

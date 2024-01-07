@@ -271,8 +271,8 @@ export function parseLogicalExpression(tokens) {
     return exp
 }
 
-const generatedTokens = tokenize(code)
-console.log(generatedTokens)
-let ast = parseLogicalExpression(generatedTokens)
-console.log(ast)
-console.log(generate.default(ast).code)
+//const generatedTokens = tokenize(code)
+//console.log(generatedTokens)
+//let ast = parseLogicalExpression(generatedTokens)
+//console.log(ast)
+//console.log(generate.default(ast).code)
