@@ -1,9 +1,5 @@
-import {
-    IfStatement,
-    BlockStatement,
-} from './Classes.js'
+import { IfStatement, BlockStatement } from './Classes.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
-
 
 function getCurrentIf(parentIf) {
     if (!parentIf?.alternate) {

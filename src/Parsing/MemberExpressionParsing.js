@@ -10,7 +10,6 @@ import { getNode } from '../helpers/getNode.js'
 //    { type: 'openeing_parenthesis', value: '(' },
 //    { type: 'closing_parenthesis', value: ')' },
 //]
-//
 
 function parseArguments(tokens, i) {
     let paranCount = 1
@@ -18,7 +17,17 @@ function parseArguments(tokens, i) {
     let args = []
     while (paranCount !== 0) {
         let tempTokens = []
-        while (tokens[i]?.value !== ',' && tokens[i]?.value !== ')') {
+        let paramCount = 0
+        while (true) {
+            if (tokens[i]?.value === ',' || (tokens[i]?.value === ')' && paramCount === 0)) {
+                break
+            }
+            if (tokens[i]?.value === ')') {
+                paramCount++
+            }
+            if (tokens[i]?.value === '(') {
+                paramCount--
+            }
             tempTokens.push(tokens[i])
             i++
         }
@@ -39,7 +48,12 @@ function parseArguments(tokens, i) {
 }
 
 export function parseMemberExpression(tokens, i) {
-    if (tokens[i].type !== 'identifier' && tokens[i].type !== 'string' && tokens[i].type !== 'Number') {
+    if (
+        tokens[i].type !== 'identifier' &&
+        tokens[i].type !== 'string' &&
+        tokens[i].type !== 'Number' &&
+        tokens[i].type === 'keyword'
+    ) {
         return
     }
     let currExp = new ExpressionStatement()
@@ -67,7 +81,6 @@ export function parseMemberExpression(tokens, i) {
                 }
                 let memberExp = new MemberExpression()
                 memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
-            console.log(tempTokens)
                 tempTokens.length === 1
                     ? memberExp.setProperty(getNode(tempTokens[0]))
                     : memberExp.setProperty(parseLogicalExpression(tempTokens, 0))
