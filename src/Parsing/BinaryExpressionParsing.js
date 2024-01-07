@@ -1,8 +1,16 @@
 import { BinaryExpression, LogicalExpression } from './Classes.js'
-import { parse } from '@babel/parser'
 import generate, { CodeGenerator } from '@babel/generator'
 import { getNode } from '../helpers/getNode.js'
 import { parseMemberExpression } from './MemberExpressionParsing.js'
+import { tokenize } from '../tokenization/tokenize.js'
+import fs from 'fs'
+
+
+const code = fs.readFileSync('../code.goat', { encoding: 'utf8' })
+
+//const tokens = [
+//    { type: 'Number', value: 2 },
+//]
 
 //const tokens = [
 //      { type: 'identifier', value: 'arr' },
@@ -97,7 +105,7 @@ function isItExpressionStatement(tokens) {
     let isExpLogicalOrBinary = false
     let isInParameter = false
     tokens.forEach((token, idx) => {
-        if (token?.value === '(' && tokens[idx - 1]?.type === 'identifier') {
+        if ((token?.value === '(' && tokens[idx - 1]?.type === 'identifier') || (token?.value === "(" && tokens[idx-1].value === "->")) {
             isInParameter = true
         }
         if (isInParameter && token.value === ')') {
@@ -111,6 +119,7 @@ function isItExpressionStatement(tokens) {
                 token.value === '!' ||
                 token.value === '+' ||
                 token.value === '-' ||
+                token.value === '**' ||
                 token.value === '/' ||
                 token.value === '*' ||
                 token.value === '%' ||
@@ -127,14 +136,16 @@ function isItExpressionStatement(tokens) {
 function precedenceOf(opr) {
     switch (opr) {
         case '>':
-            return 5
+            return 6
         case '<':
-            return 5
+            return 6
         case '-':
-            return 4
+            return 5
         case '+':
-            return 3
+            return 4
         case '*':
+            return 3
+        case '%':
             return 2
         case '/':
             return 1
@@ -151,7 +162,6 @@ export function parseLogicalExpression(tokens) {
             return parseMemberExpression(tokens, 0)
         }
     }
-    console.log('notttttt', tokens)
 
     if (tokens[0]?.value === '(' && tokens[tokens.length - 1]?.value === ')') {
         tokens.pop()
@@ -197,6 +207,7 @@ export function parseLogicalExpression(tokens) {
                     tokens[i].value === '-' ||
                     tokens[i].value === '**' ||
                     tokens[i].value === '>' ||
+                    tokens[i].value === '%' ||
                     tokens[i].value === '<')
             ) {
                 if (!index) {
@@ -228,6 +239,8 @@ export function parseLogicalExpression(tokens) {
     return exp
 }
 
-//let ast = parseLogicalExpression(tokens)
-//console.log(ast)
-//console.log(generate.default(ast).code)
+const generatedTokens = tokenize(code)
+console.log(generatedTokens)
+let ast = parseLogicalExpression(generatedTokens)
+console.log(ast)
+console.log(generate.default(ast).code)

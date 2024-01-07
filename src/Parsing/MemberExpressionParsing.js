@@ -67,9 +67,10 @@ export function parseMemberExpression(tokens, i) {
                 }
                 let memberExp = new MemberExpression()
                 memberExp.setObj(currExp?.expression ? currExp?.expression : getNode(tempToken))
+            console.log(tempTokens)
                 tempTokens.length === 1
                     ? memberExp.setProperty(getNode(tempTokens[0]))
-                    : memberExp.setProperty(parseMemberExpression(tempTokens, 0))
+                    : memberExp.setProperty(parseLogicalExpression(tempTokens, 0))
                 memberExp.computed = true
                 currExp.setExpression(memberExp)
             } else {

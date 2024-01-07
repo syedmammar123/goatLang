@@ -118,6 +118,13 @@ export function tokenize(code) {
                 throw new Error('Invalid Operator')
             }
         }
+        if (code[i] === '%') {
+            tokens.push({
+                type: 'operator',
+                value: '%',
+            })
+            i++
+        }
         if (code[i] === ':') {
             tokens.push({
                 type: 'colon',
@@ -147,11 +154,27 @@ export function tokenize(code) {
             i++
         }
         if (code[i] === '*') {
-            tokens.push({
-                type: 'operator',
-                value: '*',
-            })
-            i++
+            let temp = ""
+            while (code[i] === '*') {
+                temp = temp + code[i]
+                i++
+            }
+
+            if (temp.length === 1) {
+                tokens.push({
+                    type: 'operator',
+                    value: '*',
+                })
+            }
+            if (temp.length === 2) {
+                tokens.push({
+                    type: 'operator',
+                    value: '**',
+                })
+            }
+            if (temp.length > 2) {
+                throw new Error('Invalid Operator')
+            }
         }
         if (code[i] === '<') {
             tokens.push({
@@ -169,10 +192,6 @@ export function tokenize(code) {
         }
         if (code[i] === '{' && tokens[tokens.length - 1].value !== '=' && tokens[tokens.length - 1].value !== ':') {
             functionCount++
-            console.log(
-                tokens[tokens.length - 1].value !== '=' && tokens[tokens.length - 1].value !== ':',
-                functionCount,
-            )
             tokens.push({
                 type: 'openening_blockscope',
                 value: '{',
