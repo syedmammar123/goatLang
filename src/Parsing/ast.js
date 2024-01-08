@@ -19,7 +19,7 @@ import {
 
 import { parseUntilLoop } from './ParseUntilLoop.js'
 
-const code = fs.readFileSync('../code.goat', { encoding: 'utf8' })
+const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
 
 function isParam(tokens, i,params){
     if (!params){
