@@ -26,6 +26,9 @@ function isParam(tokens, i, params) {
 }
 
 export const generateAst = (tokens) => {
+    if (!tokens.length){
+        return
+    }
     let i = 0
     let ast = new Program()
     let variables = []
@@ -74,7 +77,9 @@ export const generateAst = (tokens) => {
                             keywords?.includes(tokens[i]?.value))) ||
                     tokens.length <= i ||
                     tokens[i].value === ']' ||
-                    tokens[i].value === ',' ||
+            (
+                    tokens[i].value === ',' &&
+            scope[scope.length - 1] instanceof ArrayExpression) ||
                     tokens[i].value === '}'
                 ) {
                     break
@@ -171,6 +176,7 @@ export const generateAst = (tokens) => {
             let paranCount = 1
             i++
             while (true) {
+
                 if (tokens[i]?.value === ')' && paranCount === 1) {
                     break
                 }
@@ -178,14 +184,13 @@ export const generateAst = (tokens) => {
                     paranCount--
                 } else if (tokens[i]?.value === '(') {
                     paranCount++
-                } else if (tokens[i]?.value === ',') {
-                    i++
-                }
+                }    
                 tempTokens.push(tokens[i])
                 i++
             }
             tempTokens.push(tokens[i])
             i++
+                console.log(tempTokens)
             scope[scope.length - 1].push(parseLogicalExpression(tempTokens))
         }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'return') {

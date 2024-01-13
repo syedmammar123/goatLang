@@ -67,7 +67,7 @@ export function parseMemberExpression(tokens, i) {
             callExp.setCallee(currExp?.expression ? currExp?.expression : getNode(tempToken))
             let [args, j] = parseArguments(tokens, i)
             i = j
-            callExp.pushArg(...args)
+            args.forEach((arg) => callExp.pushArg((arg)))
             currExp.setExpression(callExp)
         }
         if (tokens[i]?.value === '.' || tokens[i]?.value === '->') {

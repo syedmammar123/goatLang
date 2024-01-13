@@ -355,7 +355,6 @@ export function tokenize(code) {
                     throw new Error('Invalid number')
                 }
                 num = num + code[i]
-                console.log(code[i])
                 i++
             }
             tokens.push({
