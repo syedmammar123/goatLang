@@ -1,9 +1,2 @@
 
-
-fun fibonacci(n){
-    if (n === 1){
-        return 1
-    }
-    return fibonacci(n - 1) + fibonacci( n - 2)
-}
->>>>>>> b06931015f5c767a72a81220ecd981cf6610d676
+display(5)##werwer
