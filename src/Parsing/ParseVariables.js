@@ -1,8 +1,4 @@
-import {
-    ArrayExpression,
-    VariableDeclarator,
-    Identifier,
-} from './Classes.js'
+import { ArrayExpression, VariableDeclarator, Identifier } from './Classes.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
 import { getNode } from '../helpers/getNode.js'
 import { keywords } from '../environment/environment.js'
@@ -31,7 +27,6 @@ export function parseVariables(tokens, i, scope) {
         i++
         let objCount = 1
         while (objCount !== 0) {
-            console.log(tokens[i])
             if (tokens[i]?.value === '{' && tokens[i].type === 'objectStart') {
                 objCount++
             } else if (tokens[i]?.value === '}' && tokens[i].type === 'objectEnd') {
@@ -59,6 +54,7 @@ export function parseVariables(tokens, i, scope) {
             if (
                 ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
                     expTokens[expTokens.length - 1]?.type === 'string' ||
+                    expTokens[expTokens.length - 1]?.type === 'closing_parenthesis' ||
                     expTokens[expTokens.length - 1]?.type === 'Number') &&
                     (tokens[i]?.type === 'identifier' ||
                         tokens[i]?.type === 'string' ||
@@ -72,14 +68,12 @@ export function parseVariables(tokens, i, scope) {
             expTokens.push(tokens[i])
             i++
         }
-    console.log(expTokens,"exppppppppp")
         if (expTokens.length === 1) {
             declarator1.setInit(getNode(expTokens[0]))
         } else {
             declarator1.setInit(parseLogicalExpression(expTokens))
         }
         i--
-    console.log(tokens[i])
     }
 
     return [declarator1, i]

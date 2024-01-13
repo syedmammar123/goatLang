@@ -9,25 +9,19 @@ import { tokenize } from '../tokenization/tokenize.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
 import { getNode } from '../helpers/getNode.js'
 import { keywords } from '../environment/environment.js'
-import {
-    ReturnStatement,
-    ArrayExpression,
-    Program,
-    VariableDeclaration,
-    ExpressionStatement,
-} from './Classes.js'
+import { ReturnStatement, ArrayExpression, Program, VariableDeclaration, ExpressionStatement } from './Classes.js'
 
 import { parseUntilLoop } from './ParseUntilLoop.js'
 
 const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
 
-function isParam(tokens, i,params){
-    if (!params){
+function isParam(tokens, i, params) {
+    if (!params || !tokens[i]?.type === 'identifier') {
         return
     }
-    while (tokens[i]?.type !== "identifier"){
-        i++
-    }
+    //    while (tokens[i]?.type !== "identifier"){
+    //        i++
+    //    }
     return params?.includes(tokens[i].value)
 }
 
@@ -65,13 +59,14 @@ export const generateAst = (tokens) => {
                 tokens[i]?.type === 'Number' ||
                 tokens[i]?.type === 'string') &&
                 tokens[i + 1]?.value !== '=') ||
-            (tokens[i + 1]?.value === '(' && tokens[i]?.type !== 'keyword') 
+            (tokens[i + 1]?.value === '(' && tokens[i]?.type !== 'keyword')
         ) {
             let expTokens = []
             while (true) {
                 if (
                     ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
                         expTokens[expTokens.length - 1]?.type === 'string' ||
+                        expTokens[expTokens.length - 1]?.type === 'closing_parenthesis' ||
                         expTokens[expTokens.length - 1]?.type === 'Number') &&
                         (tokens[i]?.type === 'identifier' ||
                             tokens[i]?.type === 'string' ||
@@ -79,8 +74,8 @@ export const generateAst = (tokens) => {
                             keywords?.includes(tokens[i]?.value))) ||
                     tokens.length <= i ||
                     tokens[i].value === ']' ||
-                    tokens[i].value === ',' || 
-                tokens[i].value === "}"
+                    tokens[i].value === ',' ||
+                    tokens[i].value === '}'
                 ) {
                     break
                 }
@@ -94,14 +89,17 @@ export const generateAst = (tokens) => {
             }
         }
 
-        if (((tokens[i]?.type === 'identifier' && variables.includes(tokens[i]?.value)) ||(isParam(tokens, i, scope[scope.length - 1].params))) && tokens[i + 1]?.value === '=' ) {
-                
+        if (
+            ((tokens[i]?.type === 'identifier' && variables.includes(tokens[i]?.value)) ||
+                isParam(tokens, i, scope[scope.length - 1].params)) &&
+            tokens[i + 1]?.value === '='
+        ) {
             // assignment expression k lie
             const expressionExp = new ExpressionStatement()
             scope[scope.length - 1].push(expressionExp)
             i = parseAssignmentExpressions(tokens, i, scope, 'setExpression', expressionExp)
         }
-        console.log(tokens[i])
+
         if (
             tokens[i]?.value === 'global' ||
             tokens[i]?.value === 'const' ||
@@ -109,7 +107,7 @@ export const generateAst = (tokens) => {
                 !variables.includes(tokens[i].value) && // its not already declared
                 !(scope[scope.length - 1] instanceof ArrayExpression) && // checking that current scope array to ni bcs array me initialization nai hoskti
                 !(tokens[i + 1]?.value === '(') &&
-                !(isParam(tokens,i,scope[scope.length - 1]?.params)))
+                !isParam(tokens, i, scope[scope.length - 1]?.params))
         ) {
             let targetScope = scope[scope.length - 1]
             let var1 = new VariableDeclaration()
@@ -138,9 +136,9 @@ export const generateAst = (tokens) => {
             }
             i++
         }
-        if (tokens[i]?.type === "keyword" && tokens[i]?.value === "until") {
-            i = parseUntilLoop(tokens, i, scope[scope.length - 1], scope);
-            i++;
+        if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'until') {
+            i = parseUntilLoop(tokens, i, scope[scope.length - 1], scope)
+            i++
         }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
             i = parseFunction(tokens, i, scope[scope.length - 1], scope)
@@ -172,12 +170,15 @@ export const generateAst = (tokens) => {
             ]
             let paranCount = 1
             i++
-            while (tokens[i].value !== ')' && paranCount !== 0) {
-                if (tokens[i].value === ')') {
+            while (true) {
+                if (tokens[i]?.value === ')' && paranCount === 1) {
+                    break
+                }
+                if (tokens[i]?.value === ')') {
                     paranCount--
-                } else if (tokens[i].value === '(') {
+                } else if (tokens[i]?.value === '(') {
                     paranCount++
-                } else if (tokens[i].value === ',') {
+                } else if (tokens[i]?.value === ',') {
                     i++
                 }
                 tempTokens.push(tokens[i])
@@ -227,29 +228,26 @@ export const generateAst = (tokens) => {
                     expTokens.push(tokens[i])
                     i++
                 }
-
                 if (expTokens.length === 1) {
                     returnStat.setArgument(getNode(expTokens[0]))
                 } else {
                     returnStat.setArgument(parseLogicalExpression(expTokens))
                 }
             }
-            
+
             if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'fun') {
                 i = parseFunction(tokens, i, returnStat, scope, true, 'setArgument')
                 i++
             }
             if (tokens[i].value === '[') {
-                // agr nested array ho to ...
                 let arr = new ArrayExpression()
                 returnStat.setArgument(arr) // array ko current scope me add kia
                 scope.push(arr) // array ko current scope bnaya so that next sare elements ushi array me add hon
                 i++
             }
         }
-
         if (tokens[i]?.value === 'for') {
-            i = parseForLoop(tokens, i ,scope)
+            i = parseForLoop(tokens, i, scope)
         }
 
         if (tokens[i]?.value === '}' && tokens[i]?.type === 'closing_blockscope') {

@@ -1,11 +1,7 @@
-import {
-    AssignmentExpression,
-    ArrayExpression,
-} from './Classes.js'
+import { AssignmentExpression, ArrayExpression } from './Classes.js'
 import { parseLogicalExpression } from './BinaryExpressionParsing.js'
 import { getNode } from '../helpers/getNode.js'
 import { keywords } from '../environment/environment.js'
-
 
 export function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
     const assignmentExp = new AssignmentExpression()
@@ -31,12 +27,13 @@ export function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
             if (
                 ((expTokens[expTokens.length - 1]?.type === 'identifier' ||
                     expTokens[expTokens.length - 1]?.type === 'string' ||
+                    expTokens[expTokens.length - 1]?.type === 'closing_parenthesis' ||
                     expTokens[expTokens.length - 1]?.type === 'Number') &&
                     (tokens[i]?.type === 'identifier' ||
                         tokens[i]?.type === 'string' ||
                         tokens[i]?.type === 'Number' ||
                         keywords?.includes(tokens[i]?.value))) ||
-                tokens.length <= i || 
+                tokens.length <= i ||
                 tokens[i].value === '}'
             ) {
                 break
@@ -44,7 +41,6 @@ export function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
             expTokens.push(tokens[i])
             i++
         }
-        console.log(expTokens,"llllllllllll")
         if (expTokens.length === 1) {
             assignmentExp.setRight(getNode(expTokens[0]))
         } else {
@@ -54,4 +50,3 @@ export function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
 
     return i
 }
-

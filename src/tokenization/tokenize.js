@@ -154,7 +154,7 @@ export function tokenize(code) {
             i++
         }
         if (code[i] === '*') {
-            let temp = ""
+            let temp = ''
             while (code[i] === '*') {
                 temp = temp + code[i]
                 i++
@@ -186,7 +186,7 @@ export function tokenize(code) {
         if (code[i] === '>') {
             tokens.push({
                 type: 'greater_than',
-                value: '<',
+                value: '>',
             })
             i++
         }

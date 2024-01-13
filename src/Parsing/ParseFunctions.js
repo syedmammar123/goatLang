@@ -1,9 +1,4 @@
-import {
-    BlockStatement,
-    FunctionDeclaration,
-    Identifier,
-} from './Classes.js'
-
+import { BlockStatement, FunctionDeclaration, Identifier } from './Classes.js'
 
 export function parseFunction(tokens, i, destScope, scope, isAssigned, setter) {
     const fun = new FunctionDeclaration()
@@ -31,7 +26,6 @@ export function parseFunction(tokens, i, destScope, scope, isAssigned, setter) {
         i++
         paramCount++
     }
-        console.log(fun.params)
 
     i++
     if (tokens[i].type === 'openening_blockscope' && tokens[i].value === '{') {

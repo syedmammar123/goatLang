@@ -5,7 +5,6 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 import { tokenize } from '../tokenization/tokenize.js'
 import fs from 'fs'
 
-
 const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
 
 //const tokens = [
@@ -104,12 +103,28 @@ const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' }
 function isItExpressionStatement(tokens) {
     let isExpLogicalOrBinary = false
     let isInParameter = false
+    let paramCount = 0
     tokens.forEach((token, idx) => {
-        if ((token?.value === '(' && tokens[idx - 1]?.type === 'identifier') || (token?.value === "(" && tokens[idx-1].value === "->")) {
+        if (
+            (token?.value === '(' && tokens[idx - 1]?.type === 'identifier') || token?.value === "display" ||
+            (token?.value === '(' && tokens[idx - 1]?.value === '->')
+        ) {
             isInParameter = true
         }
-        if (isInParameter && token.value === ')') {
+        if (
+            !(
+                (token?.value === '(' && tokens[idx - 1]?.type === 'identifier') || token?.value === "display"||
+                (token?.value === '(' && tokens[idx - 1]?.value === '->')
+            ) &&
+            token?.value === '('
+        ) {
+            paramCount++
+        }
+        if (isInParameter && token.value === ')' && paramCount === 0) {
             isInParameter = false
+        }
+        if (token?.value === ')' && paramCount > 0) {
+                paramCount--
         }
         if (
             (token.value === '||' ||
@@ -154,18 +169,35 @@ function precedenceOf(opr) {
     }
 }
 
+function trimTokens(tokens) {
+    let i = 0
+    if (
+        tokens[i]?.value === '(' &&
+        tokens[i]?.type === 'openeing_parenthesis' &&
+        tokens[tokens.length - 1]?.value === ')'
+    ) {
+        while (tokens[0]?.value === '(' && tokens[0]?.type === 'openeing_parenthesis') {
+            tokens.shift()
+            i++
+        }
+        let len = tokens.length
+        for (let j = len - 1; j >= len - i; j--) {
+            if (tokens[j]?.value === ')' && tokens[j]?.type === 'closing_parenthesis') {
+                tokens.pop()
+            }
+        }
+    }
+    return tokens
+}
+
 export function parseLogicalExpression(tokens) {
+    tokens = trimTokens(tokens)
     if (!isItExpressionStatement(tokens)) {
         if (tokens.length === 1) {
             return getNode(tokens.pop())
         } else {
             return parseMemberExpression(tokens, 0)
         }
-    }
-
-    if (tokens[0]?.value === '(' && tokens[tokens.length - 1]?.value === ')') {
-        tokens.pop()
-        tokens.shift()
     }
 
     let idx = null
@@ -239,8 +271,8 @@ export function parseLogicalExpression(tokens) {
     return exp
 }
 
-const generatedTokens = tokenize(code)
-console.log(generatedTokens)
-let ast = parseLogicalExpression(generatedTokens)
-console.log(ast)
-console.log(generate.default(ast).code)
+//const generatedTokens = tokenize(code)
+//console.log(generatedTokens)
+//let ast = parseLogicalExpression(generatedTokens)
+//console.log(ast)
+//console.log(generate.default(ast).code)
