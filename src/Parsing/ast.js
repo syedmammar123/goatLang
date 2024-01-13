@@ -209,6 +209,7 @@ export const generateAst = (tokens) => {
             }
             tempTokens.push(tokens[i])
             i++
+            console.log(tempTokens)
             scope[scope.length - 1].push(parseLogicalExpression(tempTokens))
         }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'return') {
