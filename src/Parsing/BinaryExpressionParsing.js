@@ -138,6 +138,8 @@ function isItExpressionStatement(tokens) {
                 token.value === '/' ||
                 token.value === '*' ||
                 token.value === '%' ||
+                token.value === '>=' ||
+                token.value === '<=' ||
                 token.value === '>' ||
                 token.value === '<') &&
             !isInParameter
@@ -150,6 +152,10 @@ function isItExpressionStatement(tokens) {
 
 function precedenceOf(opr) {
     switch (opr) {
+        case '>=':
+            return 6
+        case '<=':
+            return 6
         case '>':
             return 6
         case '<':
@@ -239,6 +245,8 @@ export function parseLogicalExpression(tokens) {
                     tokens[i].value === '-' ||
                     tokens[i].value === '**' ||
                     tokens[i].value === '>' ||
+                    tokens[i].value === '>=' ||
+                    tokens[i].value === '<=' ||
                     tokens[i].value === '%' ||
                     tokens[i].value === '<')
             ) {
