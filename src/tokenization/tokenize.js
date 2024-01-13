@@ -177,18 +177,37 @@ export function tokenize(code) {
             }
         }
         if (code[i] === '<') {
+            if (code[i + 1] === "=" ){
+                tokens.push({
+                    type:"operator",
+                    value: "<="
+                })
+                i++
+                i++
+            }
+            else{
             tokens.push({
                 type: 'less_than',
                 value: '<',
             })
             i++
+            }
         }
         if (code[i] === '>') {
+            if (code[i + 1] === "=" ){
+                tokens.push({
+                    type:"operator",
+                    value: ">="
+                })
+                i++
+                i++
+            }else {
             tokens.push({
                 type: 'greater_than',
                 value: '>',
             })
             i++
+            }
         }
         if (code[i] === '{' && tokens[tokens.length - 1].value !== '=' && tokens[tokens.length - 1].value !== ':') {
             functionCount++
