@@ -1,2 +1,19 @@
+arr = [2,3,4,5]
 
-display(5)##werwer
+fun insertIntoArray(arr, idx, val){
+    global const i = arr.length - 1
+    until (i >= idx){
+        arr->(i + 1) = arr->(i)
+    }
+    arr->(idx) = val
+    display(arr,idx,val)
+}
+
+insertIntoArray(arr, 2, 45)
+
+fun fibonacci(n){
+    if (n === 1){
+        return 1
+    }
+    return fibonacci(n - 1) + fibonacci( n - 2)
+}

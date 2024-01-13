@@ -19,13 +19,34 @@ function isParam(tokens, i, params) {
     if (!params || !tokens[i]?.type === 'identifier') {
         return
     }
-    //    while (tokens[i]?.type !== "identifier"){
-    //        i++
-    //    }
     return params?.includes(tokens[i].value)
 }
 
+function isItAssignmentStatement(tokens, i){
+    let isExpressionAssignment = false
+    let count = 0
+    while (true){
+        if (tokens[i]?.value === "="){
+            isExpressionAssignment = true
+            break;
+        }
+        if (tokens[i]?.type === "keyword"){
+            isExpressionAssignment = false
+            break;
+        }
+        count++
+        if (count > 100){
+            break;
+        }
+        i++
+    }
+    return isExpressionAssignment
+}
+
 export const generateAst = (tokens) => {
+    if (!tokens.length){
+        return
+    }
     let i = 0
     let ast = new Program()
     let variables = []
@@ -58,7 +79,8 @@ export const generateAst = (tokens) => {
             (((tokens[i].type === 'identifier' && variables.includes(tokens[i].value)) || // array values ya ksi non declarative ya non assignment statements k lev
                 tokens[i]?.type === 'Number' ||
                 tokens[i]?.type === 'string') &&
-                tokens[i + 1]?.value !== '=') ||
+//                tokens[i + 1]?.value !== '=') ||
+                !isItAssignmentStatement(tokens, i)) ||
             (tokens[i + 1]?.value === '(' && tokens[i]?.type !== 'keyword')
         ) {
             let expTokens = []
@@ -74,7 +96,9 @@ export const generateAst = (tokens) => {
                             keywords?.includes(tokens[i]?.value))) ||
                     tokens.length <= i ||
                     tokens[i].value === ']' ||
-                    tokens[i].value === ',' ||
+            (
+                    tokens[i].value === ',' &&
+            scope[scope.length - 1] instanceof ArrayExpression) ||
                     tokens[i].value === '}'
                 ) {
                     break
@@ -92,7 +116,7 @@ export const generateAst = (tokens) => {
         if (
             ((tokens[i]?.type === 'identifier' && variables.includes(tokens[i]?.value)) ||
                 isParam(tokens, i, scope[scope.length - 1].params)) &&
-            tokens[i + 1]?.value === '='
+            isItAssignmentStatement(tokens, i)
         ) {
             // assignment expression k lie
             const expressionExp = new ExpressionStatement()
@@ -171,6 +195,7 @@ export const generateAst = (tokens) => {
             let paranCount = 1
             i++
             while (true) {
+
                 if (tokens[i]?.value === ')' && paranCount === 1) {
                     break
                 }
@@ -178,14 +203,13 @@ export const generateAst = (tokens) => {
                     paranCount--
                 } else if (tokens[i]?.value === '(') {
                     paranCount++
-                } else if (tokens[i]?.value === ',') {
-                    i++
-                }
+                }    
                 tempTokens.push(tokens[i])
                 i++
             }
             tempTokens.push(tokens[i])
             i++
+            console.log(tempTokens)
             scope[scope.length - 1].push(parseLogicalExpression(tempTokens))
         }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'return') {

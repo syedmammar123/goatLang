@@ -6,8 +6,13 @@ import { keywords } from '../environment/environment.js'
 export function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
     const assignmentExp = new AssignmentExpression()
     parent[setter](assignmentExp)
-    assignmentExp.setLeft(getNode(tokens[i]))
-    i++
+    let leftSide = []
+    while (tokens[i]?.value !== "="){
+        leftSide.push(tokens[i])
+        i++
+    }
+    console.log(leftSide,"leftside")
+    assignmentExp.setLeft(parseLogicalExpression(leftSide))
     if (tokens[i]?.value !== '=') {
         throw new Error('= exprected.')
     }

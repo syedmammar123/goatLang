@@ -19,7 +19,7 @@ function parseArguments(tokens, i) {
         let tempTokens = []
         let paramCount = 0
         while (true) {
-            if (tokens[i]?.value === ',' || (tokens[i]?.value === ')' && paramCount === 0)) {
+            if ((tokens[i]?.value === ',' && paramCount === 0) || (tokens[i]?.value === ')' && paramCount === 0)) {
                 break
             }
             if (tokens[i]?.value === ')') {
@@ -67,8 +67,9 @@ export function parseMemberExpression(tokens, i) {
             callExp.setCallee(currExp?.expression ? currExp?.expression : getNode(tempToken))
             let [args, j] = parseArguments(tokens, i)
             i = j
-            callExp.pushArg(...args)
+            args.forEach((arg) => callExp.pushArg((arg)))
             currExp.setExpression(callExp)
+            i = j
         }
         if (tokens[i]?.value === '.' || tokens[i]?.value === '->') {
             i++
