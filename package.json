@@ -1,12 +1,16 @@
 {
-  "name": "goatlang",
+  "name": "goat-lang",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./src/Parsing/ast.js",
   "type": "module",
   "scripts": {
     "test": "jest",
     "format": "prettier --write \"src/**/*.{js,jsx}\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syedmammar123/goatLang.git"
   },
   "author": "",
   "license": "ISC",

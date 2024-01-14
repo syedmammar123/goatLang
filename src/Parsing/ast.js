@@ -296,6 +296,10 @@ let ast1 = generateAst(generatedTokens)
 //    }
 //})
 
+export const codeTokenizer = (code)=>{
+    return tokenize(code)
+}
+
 console.log('Input')
 console.log(code)
 console.log('\n')
