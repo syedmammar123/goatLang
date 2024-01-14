@@ -13,7 +13,7 @@ import { ReturnStatement, ArrayExpression, Program, VariableDeclaration, Express
 
 import { parseUntilLoop } from './ParseUntilLoop.js'
 
-const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
+// const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
 
 function isParam(tokens, i, params) {
     if (!params || !tokens[i]?.type === 'identifier') {
@@ -286,9 +286,9 @@ export const generateAst = (tokens) => {
     return ast
 }
 
-const generatedTokens = tokenize(code)
-console.log(generatedTokens)
-let ast1 = generateAst(generatedTokens)
+// const generatedTokens = tokenize(code)
+// console.log(generatedTokens)
+// let ast1 = generateAst(generatedTokens)
 //console.log(JSON.stringify(ast1.body, null, 2))
 //fs.writeFile('E:/HTML/GoatLangTreeReact/GoatLangTree/src/tree.json', JSON.stringify(ast1), (err) => {
 //    if (err) {
@@ -300,8 +300,8 @@ export const codeTokenizer = (code)=>{
     return tokenize(code)
 }
 
-console.log('Input')
-console.log(code)
-console.log('\n')
-console.log('Output')
-console.log(generate.default(ast1).code)
+// console.log('Input')
+// console.log(code)
+// console.log('\n')
+// console.log('Output')
+// console.log(generate.default(ast1).code)
