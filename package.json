@@ -1,6 +1,6 @@
 {
-  "name": "goat-lang",
-  "version": "1.0.0",
+  "name": "goat-code",
+  "version": "1.0.1",
   "description": "",
   "main": "./src/Parsing/ast.js",
   "type": "module",
