@@ -1,8 +1,8 @@
 {
   "name": "goat-code",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
-  "main": "./src/Parsing/ast.js",
+  "main": "./src/Execution/main.js",
   "type": "module",
   "scripts": {
     "test": "jest",
