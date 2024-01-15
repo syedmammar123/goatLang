@@ -1,9 +1,10 @@
 import { isValidName, isBoolean } from '../helpers/token-checks.js'
 import { keywords } from '../environment/environment.js'
+import { checkIfInfiniteLoop } from '../helpers/InfiniteLoopHandler.js'
 import fs from 'fs'
 
-//const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
-//console.log(code)
+const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
+console.log(code)
 
 export function tokenize(code) {
     let i = 0
@@ -11,7 +12,9 @@ export function tokenize(code) {
     let char = ''
     let functionCount = 0
 
+
     while (i < code.length) {
+        checkIfInfiniteLoop(Date.now())
         if (code[i] === '\r' || code[i] === '\n') {
             i++;
         }
@@ -398,4 +401,4 @@ export function tokenize(code) {
     }
     return tokens
 }
-//console.log(tokenize(code))
+console.log(tokenize(code))
