@@ -13,7 +13,7 @@ import { ReturnStatement, ArrayExpression, Program, VariableDeclaration, Express
 
 import { parseUntilLoop } from './ParseUntilLoop.js'
 
-// const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
+// const code = fs.readFileSync('../code.goat', { encoding: 'utf8' })
 
 function isParam(tokens, i, params) {
     if (!params || !tokens[i]?.type === 'identifier') {
@@ -30,7 +30,7 @@ function isItAssignmentStatement(tokens, i){
             isExpressionAssignment = true
             break;
         }
-        if (tokens[i]?.type === "keyword"){
+        if (tokens[i]?.type === "keyword" || (tokens[i]?.value === "]" && tokens[i]?.type !== "identifier")){
             isExpressionAssignment = false
             break;
         }
@@ -52,6 +52,7 @@ export const generateAst = (tokens) => {
     let variables = []
     let scope = [ast]
     while (i < tokens.length) {
+        console.log(tokens[i])
         if (tokens[i].value === '[') {
             // agr nested array ho to ...
             let arr = new ArrayExpression()
@@ -67,8 +68,8 @@ export const generateAst = (tokens) => {
             i++
         }
         if (
-            (tokens[i].type === 'identifier' ||
-                (tokens[i].type === 'keyword' && (tokens[i].value === 'global' || tokens[i].value === 'const'))) &&
+            (tokens[i]?.type === 'identifier' ||
+                (tokens[i]?.type === 'keyword' && (tokens[i]?.value === 'global' || tokens[i]?.value === 'const'))) &&
             !variables.includes(tokens[i].value) &&
             scope[scope.length - 1] instanceof ArrayExpression
         ) {
@@ -299,7 +300,7 @@ export const generateAst = (tokens) => {
 export const codeTokenizer = (code)=>{
     return tokenize(code)
 }
-
+//
 // console.log('Input')
 // console.log(code)
 // console.log('\n')
