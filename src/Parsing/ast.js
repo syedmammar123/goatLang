@@ -52,7 +52,6 @@ export const generateAst = (tokens) => {
     let variables = []
     let scope = [ast]
     while (i < tokens.length) {
-        console.log(tokens[i])
         if (tokens[i].value === '[') {
             // agr nested array ho to ...
             let arr = new ArrayExpression()
@@ -210,7 +209,6 @@ export const generateAst = (tokens) => {
             }
             tempTokens.push(tokens[i])
             i++
-            console.log(tempTokens)
             scope[scope.length - 1].push(parseLogicalExpression(tempTokens))
         }
         if (tokens[i]?.type === 'keyword' && tokens[i]?.value === 'return') {
