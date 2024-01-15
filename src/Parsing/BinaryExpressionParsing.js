@@ -5,7 +5,7 @@ import { parseMemberExpression } from './MemberExpressionParsing.js'
 import { tokenize } from '../tokenization/tokenize.js'
 import fs from 'fs'
 
-const code = fs.readFileSync('../code.goat', { encoding: 'utf8' })
+// const code = fs.readFileSync('D:/codes/lang/src/code.goat', { encoding: 'utf8' })
 
 //const tokens = [
 //    { type: 'Number', value: 2 },

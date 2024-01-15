@@ -32,7 +32,6 @@ else{
 
 }
 fun print(name){
-
 }
 a = 4
 b = 3
@@ -47,7 +46,6 @@ temp = 0
 temp = a === b > c === b
 
 temp2 = 3
-
 
 
 
