@@ -39,7 +39,7 @@
     ]
   },
   "bin": {
-    "goat run": "./src/Execution/executionScript.js",
+    "goat-run": "./src/Execution/executionScript.js",
     "goat": "./src/REPL/REPL.js"
   }
 }
