@@ -11,7 +11,6 @@ export function parseAssignmentExpressions(tokens, i, scope, setter, parent) {
         leftSide.push(tokens[i])
         i++
     }
-    console.log(leftSide,"leftside")
     assignmentExp.setLeft(parseLogicalExpression(leftSide))
     if (tokens[i]?.value !== '=') {
         throw new Error('= exprected.')
