@@ -300,7 +300,19 @@ export const generateAst = (tokens) => {
 export const codeTokenizer = (code)=>{
     return tokenize(code)
 }
-//
+
+export const GetTAC = (goatCode)=>{
+    try {
+        let tokens = tokenize(goatCode)
+        let ast = generateAst(tokens)
+
+        let code = generate.default(ast).code
+        return [tokens, ast, code]
+    } catch (e) {
+        console.log(e.message)
+    }
+}
+
 // console.log('Input')
 // console.log(code)
 // console.log('\n')
