@@ -2,7 +2,7 @@ import { isValidName, isBoolean } from '../helpers/token-checks.js'
 import { keywords } from '../environment/environment.js'
 import fs from 'fs'
 
-//const code = fs.readFileSync('../code.goat', { encoding: 'utf8' })
+//const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
 //console.log(code)
 
 export function tokenize(code) {
@@ -384,5 +384,4 @@ export function tokenize(code) {
     }
     return tokens
 }
-
 //console.log(tokenize(code))

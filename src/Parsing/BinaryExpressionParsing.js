@@ -216,12 +216,12 @@ export function parseLogicalExpression(tokens) {
         if (tokens[i].value === '(') {
             paramCount--
         }
-        if ((tokens[i].value === '&&' || tokens[i].value === '||' || tokens[i].value === '===') && paramCount <= 0) {
+        if ((tokens[i].value === '&&' || tokens[i].value === '||' || tokens[i].value === '===' || tokens[i].value === '==') && paramCount <= 0) {
             if (!idx) {
                 idx = i
             } else if (
                 (tokens[idx].value === '&&' && tokens[i].value === '||') ||
-                ((tokens[i].value === '&&' || tokens[i].value === '||') && tokens[idx].value === '===')
+                ((tokens[i].value === '&&' || tokens[i].value === '||') && (tokens[idx].value === '===' || tokens[idx].value === '=='))
             ) {
                 idx = i
             }

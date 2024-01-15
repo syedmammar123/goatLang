@@ -1,22 +1,10 @@
-arr = [2,3,4,5]
-
-fun insertIntoArray(arr, idx, val){
-    global const i = arr.length - 1
-    until (i >= idx){
-        arr->(i + 1) = arr->(i)
-    }
-    arr->(idx) = val
-    display(arr,idx,val)
+a = 5
+if(a>10){
+    display("Greater than 10")
 }
-
-insertIntoArray(arr, 2, 45)
-
-fun factorial(n){
-    if (n === 1){
-        return 1
-    }
-
-    return n * factorial(n - 1)
+elf(a == 10){
+    display("equals to 10")
 }
-factorial(3,4)
-display(factorial(lol(23,4,5)))
+else{
+    display("less than 10")
+}
