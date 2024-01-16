@@ -2,8 +2,8 @@ import { isValidName, isBoolean } from '../helpers/token-checks.js'
 import { keywords } from '../environment/environment.js'
 import fs from 'fs'
 
-//const code = fs.readFileSync('E:/HTML/GoatLang/goatLang/src/code.goat', { encoding: 'utf8' })
-//console.log(code)
+// const code = fs.readFileSync('../code.goat', { encoding: 'utf8' })
+// console.log(code)
 
 export function tokenize(code) {
     let i = 0
@@ -19,10 +19,13 @@ export function tokenize(code) {
 
         if(code[i]==='#' && code[i+1] === '#'){
             i+=2;
-            while(code[i]!=='\n' && i < code.length){
+            while(i < code.length && code[i]!=='\n'){
                 i++;
             }
             i++;
+        }
+        if(code[i]==='#' && code[i+1] !== '#'){
+            throw new Error("Unknown Character: #")
         }
         
         
@@ -398,4 +401,4 @@ export function tokenize(code) {
     }
     return tokens
 }
-//console.log(tokenize(code))
+// console.log(tokenize(code))
