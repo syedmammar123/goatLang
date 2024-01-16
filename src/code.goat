@@ -1,3 +1,5 @@
-arr = [2,3]
+##a##asd
+arr = [2,3] ##safa
 arr->(arr.length) = 45
+##
 display(arr)

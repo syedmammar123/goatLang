@@ -24,3 +24,13 @@ export function GetTAC(goatCode) {
         console.log(e.message)
     }
 }
+
+export const Tokenizer = (goatCode)=>{
+    return tokenize(goatCode)
+}
+export const AstGenerator = (tokens)=>{
+    return generateAst(tokens)
+}
+export const astToJs = (ast)=>{
+    return generate.default(ast).code
+}
